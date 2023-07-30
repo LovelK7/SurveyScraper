@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import winsound
 import customtkinter as ctk
 from tkinter import messagebox
@@ -13,7 +14,11 @@ class SurveyScraper():
         self.gui.columnconfigure(1, weight=1)
 
         def open_readme():
-            file_path = 'SurveyScraper/surveyscraper_README.txt'
+            if getattr(sys,'frozen',False):
+                application_path = os.path.dirname(sys.executable)
+            elif __file__:
+                application_path = os.path.dirname(__file__)
+            file_path = os.path.join(application_path, 'surveyscraper_README.txt')
             readme = ctk.CTkToplevel()
             readme.title('Readme')
             readme.grab_set()
@@ -24,7 +29,7 @@ class SurveyScraper():
                     text = readme_file.read()
                 readme_text.insert('0.0',text)
             except IOError as error:
-                readme_text.insert('0.0',f'Pogreška prilikom učitanja readme datoteke\n{error}')
+                readme_text.insert('0.0',f'Pogreška prilikom učitanja readme datoteke!\n{error}')
             readme_text.configure(state='disabled')
 
         self.gui_title = ctk.CTkLabel(self.gui, text='SurveyScraper', font=('Roboto', 20))
