@@ -54,13 +54,16 @@ class SurveyScraper():
 
         def open_file_event(software):
             global file_path, name_for_file
-            file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', title='Otvori txt datoteku', 
-                                                        filetypes = (("Text files","*.txt*"),("CSV file","*.csv"),("all files","*.*")))
-            if file_path.endswith('.txt') and software == 'topodroid':
-                messagebox.showerror('Pogreška','Za obradu TopoDroid podataka potrebna je csv datoteka!')
-                file_path = None
-            elif file_path.endswith('.csv') and software == 'pockettopo':
-                messagebox.showerror('Pogreška','Za obradu PocketTopo podataka potrebna je txt datoteka!')
+            pt_filetype = (("Text file","*.txt*"), ("All files","*"))
+            td_filetype = (("CSV file","*.csv"), ("All files","*"))
+            if software == 'topodroid':
+                file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', title='Otvori csv datoteku', filetypes = td_filetype)
+            elif software == 'pockettopo':
+                file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', title='Otvori txt datoteku', filetypes = pt_filetype)
+            
+            if (not file_path.endswith('.csv') and software == 'topodroid') or (not file_path.endswith('.txt') and software == 'pockettopo'):
+                if not file_path == '':
+                    messagebox.showerror('Pogreška','Nije otvorena pravilna datoteka!')
                 file_path = None
             if file_path:
                 file_base_name = os.path.basename(file_path)
@@ -86,14 +89,25 @@ class SurveyScraper():
         self.parse_file.grid(row=3, column=0, padx=5, pady=10, columnspan=2)
         self.parse_file.configure(state='disabled')
 
+        self.success_run = ctk.CTkLabel(self.content, text='', width=200, height=25)
+        self.success_run.grid(row=4, column=0, padx=5, pady=5, columnspan=2)
+        self.success_run.configure(state='disabled')
+
         self.gui.mainloop()
 
-    def parse_event(self, software):   
+    def parse_event(self, software):
+        global success 
+        success = False
         if self.create_write_file():
             if software == 'pockettopo':
-                self.parse_pockettopo()
+                success = self.parse_pockettopo()
             elif software == 'topodroid':
-                self.parse_topodroid()           
+                success = self.parse_topodroid()   
+            if success:
+                winsound.MessageBeep()
+                self.success_run.configure(text='Uspješna konverzija!')
+            else:
+                self.success_run.configure(text='Pogreška!')
         
     def create_write_file(self):
         global write_file_path
@@ -134,7 +148,8 @@ class SurveyScraper():
                     with open(write_file_path, 'a') as file:
                         file.write(main_shot)
                     shots.clear()
-        winsound.MessageBeep()
+        success = True
+        return success
 
     def parse_topodroid(self):
         with open(file_path,'r') as file:
@@ -151,7 +166,8 @@ class SurveyScraper():
                         main_shot = f'{self.sign}-{shot_from},{self.sign}-{shot_to},{shot[2]},{shot[3]},{shot[4]}\n'
                     with open(write_file_path, 'a') as file:
                         file.write(main_shot)
-        winsound.MessageBeep()
+        success = True
+        return success
 
 if __name__ == '__main__':
     SurveyScraper()
