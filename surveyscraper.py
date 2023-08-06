@@ -130,24 +130,33 @@ class SurveyScraper():
         with open(file_path,'r') as file:
             for _ in range(6):
                 next(file)   
-            shots = []
+            shots = [] #a temporary shot list
             for row in file:
                 row_data = re.sub(r'\[.\]','',row)
                 row_data = re.sub(r'<','',row_data)
-                shot = row_data.split()
+                shot = row_data.split() #a list of shot data
                 if len(shot) == 5: #filter for main shots
                     shots.append(shot)
-                if len(shots) == 3:
-                    mean_len = (float(shots[0][2])+float(shots[1][2])+float(shots[2][2]))/3
-                    mean_dir = (float(shots[0][3])+float(shots[1][3])+float(shots[2][3]))/3
-                    mean_inc = (float(shots[0][4])+float(shots[1][4])+float(shots[2][4]))/3
-                    if self.sign == '':
-                        main_shot = f'{shots[0][0]},{shots[0][1]},{mean_len:.3f},{mean_dir:.2f},{mean_inc:.2f}\n'
-                    else:
-                        main_shot = f'{self.sign}-{shots[0][0]},{self.sign}-{shots[0][1]},{mean_len:.3f},{mean_dir:.2f},{mean_inc:.2f}\n'
-                    with open(write_file_path, 'a') as file:
-                        file.write(main_shot)
-                    shots.clear()
+                    if len(shots) == 2:
+                        if shots[1][0] != shots[0][0] and shots[1][1] != shots[0][1]: #if the new shot name is different than the previous shot, save, else add to the list
+                            if self.sign == '':
+                                main_shot = f'{shots[0][0]},{shots[0][1]},{float(shots[0][2]):.3f},{float(shots[0][3]):.2f},{float(shots[0][4]):.2f}\n'
+                            else:
+                                main_shot = f'{self.sign}-{shots[0][0]},{self.sign}-{shots[0][1]},{float(shots[0][2]):.3f},{float(shots[0][3]):.2f},{float(shots[0][4]):.2f}\n'
+                            with open(write_file_path, 'a') as file:
+                                file.write(main_shot)
+                            shots.pop(0)
+                    if len(shots) == 3:
+                            mean_len = (float(shots[0][2])+float(shots[1][2])+float(shots[2][2]))/3
+                            mean_dir = (float(shots[0][3])+float(shots[1][3])+float(shots[2][3]))/3
+                            mean_inc = (float(shots[0][4])+float(shots[1][4])+float(shots[2][4]))/3
+                            if self.sign == '':
+                                main_shot = f'{shots[0][0]},{shots[0][1]},{mean_len:.3f},{mean_dir:.2f},{mean_inc:.2f}\n'
+                            else:
+                                main_shot = f'{self.sign}-{shots[0][0]},{self.sign}-{shots[0][1]},{mean_len:.3f},{mean_dir:.2f},{mean_inc:.2f}\n'
+                            with open(write_file_path, 'a') as file:
+                                file.write(main_shot)
+                            shots.clear()
         success = True
         return success
 
