@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import json
 import tkintermapview
 import datetime
 import winsound
@@ -13,13 +14,37 @@ from mag_decl_webscrape import Retrieve_lat_lon, Retrieve_magn_decl
 ctk.set_appearance_mode('light')
 ctk.set_default_color_theme('green')
 
+def config():
+    """Read configuration settings"""
+    global application_path
+    """Set the directory of the original file for a path to any other file"""
+    if getattr(sys,'frozen',False): #check if the app runs as a script or as a frozen exe file
+        application_path = os.path.dirname(sys.executable)
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+
+    """Read language catalog"""
+    global lcat
+    file_path = os.path.join(application_path, 'config_settings.json')
+    try:
+        with open(file_path,'r', encoding='utf-8') as file:
+            lcat = json.load(file)
+            return lcat['language_setting']
+    except Exception as ex:
+        messagebox.showerror('Error',f'There was an error while reading the file: {ex}')
+
 class SurveyScraper():
-    def __init__(self):
+    def __init__(self, lc):
         self.gui = ctk.CTk()
         self.gui.title('SurveyScraper')
+        self.gui.geometry("250x360")
         self.gui.columnconfigure(0, weight=6)
         self.gui.columnconfigure(1, weight=1)
         self.md_val = 0
+        if lc == 'HR':
+            self.lc = 0
+        elif lc == 'EN':
+            self.lc = 1
 
         def resource_path(relative_path):
             """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -30,143 +55,170 @@ class SurveyScraper():
                 #base_path = os.path.abspath(".")
                 base_path = os.path.dirname(__file__)
             return os.path.join(base_path, relative_path)
-
-        def open_readme():
-            if getattr(sys,'frozen',False): #check if the app runs as a script or as a frozen exe file
-                application_path = os.path.dirname(sys.executable)
-            elif __file__:
-                application_path = os.path.dirname(__file__)
-            file_path = os.path.join(application_path, 'surveyscraper_README.txt') #to find the readme file against dynamic app location
-
-            readme = ctk.CTkToplevel()
-            readme.title('Readme')
-            readme.grab_set()
-            readme_text = ctk.CTkTextbox(readme, width=700, height=500)
-            readme_text.pack()
-            try:
-                with open(file_path,'r', encoding='utf-8') as readme_file:
-                    text = readme_file.read()
-                readme_text.insert('0.0',text)
-            except IOError as error:
-                readme_text.insert('0.0',f'Pogreška prilikom učitanja readme datoteke!\n{error}')
-            readme_text.configure(state='disabled')
-
-        self.gui_title = ctk.CTkLabel(self.gui, text='SurveyScraper', font=('Roboto', 20))
-        self.gui_title.grid(row=0, column=0, padx=10, pady=10, sticky='e')
-        self.readme = ctk.CTkButton(self.gui, text='?', width=20, font=('Roboto', 12), command=open_readme)
-        self.readme.grid(row=0, column=1, padx=10, pady=10)
-
-        self.software_frm = ctk.CTkFrame(self.gui)
-        self.software_frm.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
-
-        self.software_lbl = ctk.CTkLabel(self.software_frm, text='Odaberi program: ', font=('Roboto', 14))
-        self.software_lbl.pack(padx=5, pady=5)
-        software = ctk.StringVar(self.software_frm)
-        td_radiobtn = ctk.CTkRadioButton(self.software_frm, variable=software, text='TopoDroid', value='topodroid')
-        td_radiobtn.pack(padx=5, pady=5)
-        td_radiobtn.select()
-        pt_radiobtn = ctk.CTkRadioButton(self.software_frm, variable=software, text='PocketTopo', value='pockettopo')
-        pt_radiobtn.pack(padx=5, pady=5)
-
-        self.content = ctk.CTkFrame(self.gui)
-        self.content.grid(row=2, column=0, columnspan=2, padx=10, pady=5, sticky='ew')
-
-        def open_file_event(software):
-            global file_path, name_for_file
-            pt_filetype = (("Text file","*.txt*"), ("All files","*"))
-            td_filetype = (("CSV file","*.csv"), ("All files","*"))
-            if software == 'topodroid' or software == 'topodroidx':
-                file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', 
-                                                           title='Otvori csv datoteku', filetypes = td_filetype)
-            elif software == 'pockettopo':
-                file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', 
-                                                           title='Otvori txt datoteku', filetypes = pt_filetype)
-            
-            if (not file_path.endswith('.csv') and (software == 'topodroid' or software == 'topodroidx')) or (not file_path.endswith('.txt') and software == 'pockettopo'):
-                if not file_path == '':
-                    messagebox.showerror('Pogreška','Nije otvorena pravilna datoteka!')
-                file_path = None
-            if file_path:
-                file_base_name = os.path.basename(file_path)
-                name_for_file = os.path.splitext(file_base_name)[0]
-                self.opened_file.grid()
-                self.opened_file.configure(text=file_base_name)
-                self.gui.update()
-                self.parse_file.configure(state='normal')
-                self.calc_magn_decl_btn.configure(state='normal')
         
-        self.open_file_img = ctk.CTkImage(Image.open(resource_path('img/open_file.png')), size=(15,15))
-        self.open_file = ctk.CTkButton(self.content, width=180, text='Otvori datoteku s vlakovima', 
-                                       command=lambda: open_file_event(software.get()), 
-                                       compound='left', image=self.open_file_img)
-        self.open_file.grid(row=0, column=0, padx=5, pady=10, columnspan=2)
+        #       MAIN FRAME
+        self.lang_var = ctk.StringVar(self.gui)
+        self.lang_var.set(lc)
+        self.gui_title = ctk.CTkLabel(self.gui, text='SurveyScraper', font=('Roboto', 18))
+        self.gui_title.grid(row=0, column=0, rowspan=2, padx=0, pady=5, sticky='ew')
+        language_choice = ctk.CTkOptionMenu(self.gui, values=['HR','EN'], variable=self.lang_var, anchor='center', font=('Roboto', 12), width=20,
+                                            command=self.set_language)
+        language_choice.grid(row=0, column=1, padx=0, pady=5, sticky='w')
+        self.readme = ctk.CTkButton(self.gui, text='?', width=20, font=('Roboto', 12), command=self.open_readme)
+        self.readme.grid(row=0, column=2, padx=5, pady=5, sticky='e')
 
+        #       SOFTWARE FRAME
+        self.software_frm = ctk.CTkFrame(self.gui)
+        self.software_frm.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='ew')
+        self.software_lbl = ctk.CTkLabel(self.software_frm, text=f'{lcat["software_lbl"][self.lc]}', font=('Roboto', 14))
+        self.software_lbl.pack(padx=5, pady=5)
+        self.software = ctk.StringVar(self.software_frm)
+        self.software.set(lcat['last_used_software'])
+        software_choice = ctk.CTkOptionMenu(self.software_frm, values=['TopoDroid','PocketTopo'], variable=self.software, anchor='center')
+        software_choice.pack(padx=5, pady=5)
+
+        #   OPEN FILE-DECLINATION FRAME
+        self.content = ctk.CTkFrame(self.gui)
+        self.content.grid(row=3, column=0, columnspan=3, padx=10, pady=5, sticky='ew')
+        self.content.grid_columnconfigure(0, weight=1)
+        self.content.grid_columnconfigure(1, weight=1)
+        self.open_file_img = ctk.CTkImage(Image.open(resource_path('img/open_file.png')), size=(15,15))
+        self.open_file = ctk.CTkButton(self.content, width=180, text=f'{lcat["open_file"][self.lc]}', 
+                                    command=lambda: self.open_file_event(self.software.get()), 
+                                    compound='left', image=self.open_file_img)
+        self.open_file.grid(row=0, column=0, padx=5, pady=10, columnspan=2)
         self.opened_file = ctk.CTkLabel(self.content, text='', width=200, height=25, 
                                         fg_color='white', corner_radius=5)
         self.opened_file.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
         self.opened_file.configure(state='disabled')
         self.opened_file.grid_remove()
-        
-        self.survey_sign_lbl = ctk.CTkLabel(self.content, text='Predznak točaka: ')
+        self.survey_sign_lbl = ctk.CTkLabel(self.content, text=f'{lcat["survey_sign_lbl"][self.lc]}')
         self.survey_sign_lbl.grid(row=2, column=0, padx=5, pady=5, sticky='e')
         self.survey_sign = ctk.CTkEntry(self.content, width=50, height=25)
         self.survey_sign.grid(row=2, column=1, padx=5, pady=5, sticky='w')
-
-        def calc_magn_decl():
-            MagneticDeclination_window(self)
-
         self.calc_md_img = ctk.CTkImage(Image.open(resource_path('img/compass.png')), size=(15,15))
-        self.calc_magn_decl_btn = ctk.CTkButton(self.content, width=150, text='Uračunaj magnetsku deklinaciju', 
-                                        command=calc_magn_decl, compound='left', image=self.calc_md_img)
+        self.calc_magn_decl_btn = ctk.CTkButton(self.content, width=200, text=f'{lcat["calc_magn_decl_btn"][self.lc]}', 
+                                        command=self.calc_magn_decl, compound='left', image=self.calc_md_img)
         self.calc_magn_decl_btn.grid(row=3, column=0, padx=5, pady=10, columnspan=2)
 
+        #   GENERATE FRAME
         self.content2 = ctk.CTkFrame(self.gui)
-        self.content2.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky='ew')
-        
-        self.parse_file = ctk.CTkButton(self.content2, text='Generiraj CSV', 
-                                        command=lambda: self.parse_event(software.get()))
+        self.content2.grid(row=4, column=0, columnspan=3, padx=10, pady=5, sticky='ew')
+        self.parse_img = ctk.CTkImage(Image.open(resource_path('img/generate.png')), size=(15,15))
+        self.parse_file = ctk.CTkButton(self.content2, text=f'{lcat["parse_file"][self.lc]}', 
+                                        command=lambda: self.parse_event(self.software.get()),
+                                        compound='left', image=self.parse_img)
         self.parse_file.pack(padx=5, pady=5)
         self.parse_file.configure(state='disabled')
-
         self.success_run = ctk.CTkLabel(self.content2, text='', width=180, height=25, 
                                         fg_color='white', corner_radius=5)
         self.success_run.pack(padx=5, pady=10)
         self.success_run.configure(state='disabled')
         self.success_run.pack_forget()
+        self.open_gen_file = ctk.CTkButton(self.content2, text=f'{lcat["open_gen_file"][self.lc]}', 
+                                        command=lambda: os.system('"%s"' % write_file_path),
+                                        compound='left', image=self.open_file_img)
+        self.open_gen_file.pack(padx=5, pady=5)
+        self.open_gen_file.pack_forget()
 
+        #   RUN
         self.gui.mainloop()
+    
+    def open_readme(self):
+        # find the readme file against dynamic app location
+        file_path = os.path.join(application_path, f'{lcat["readme_file_path"][self.lc]}') 
+        
+        readme = ctk.CTkToplevel()
+        readme.title('Readme')
+        readme.grab_set()
+        readme_text = ctk.CTkTextbox(readme, width=750, height=500)
+        readme_text.pack()
+        try:
+            with open(file_path,'r', encoding='utf-8') as readme_file:
+                text = readme_file.read()
+            readme_text.insert('0.0',text)
+        except IOError as error:
+            readme_text.insert('0.0',f'{lcat["readme_text"][self.lc]}\n{error}')
+        readme_text.configure(state='disabled')
+    
+    def set_language(self, language='HR'):
+        # Change language 
+        lcat['language_setting'] = language
+        if language == 'HR': 
+             messagebox.showinfo(message='Za promjenu jezika molim ponovno pokreni program!')
+        elif language == 'EN':
+             messagebox.showinfo(message='For changing the language please restart the program!')
+        # store language setting to a language catalog file
+        file_path = os.path.join(application_path, 'config_settings.json')
+        with open(file_path, 'w') as fileWriter:
+            json.dump(lcat, fileWriter, indent=4)
+
+    def open_file_event(self, software):
+        global file_path, name_for_file
+        pt_filetype = (("Text file","*.txt*"), ("All files","*"))
+        td_filetype = (("CSV file","*.csv"), ("All files","*"))
+        if software == 'TopoDroid' or software == 'topodroidx':
+            file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', 
+                                                    title=f'{lcat["file_path_csv"][self.lc]}', filetypes = td_filetype)
+        elif software == 'PocketTopo':
+            file_path = ctk.filedialog.askopenfilename(initialdir='SurveyScraper', 
+                                                    title=f'{lcat["file_path_txt"][self.lc]}', filetypes = pt_filetype)
+        
+        if (not file_path.endswith('.csv') and (software == 'TopoDroid' or software == 'topodroidx')) or (not file_path.endswith('.txt') and software == 'PocketTopo'):
+            if not file_path == '':
+                messagebox.showerror('Error',f'{lcat["file_path_error"][self.lc]}')
+            file_path = None
+        if file_path:
+            file_base_name = os.path.basename(file_path)
+            name_for_file = os.path.splitext(file_base_name)[0]
+            self.opened_file.grid()
+            self.opened_file.configure(text=file_base_name)
+            self.gui.update()
+            self.parse_file.configure(state='normal')
+            self.calc_magn_decl_btn.configure(state='normal')
+
+    def calc_magn_decl(self):
+        MagneticDeclination_window(self)
 
     def parse_event(self, software):
         global success 
         success = False
         if self.create_write_file():
-            if software == 'pockettopo':
+            if software == 'PocketTopo':
                 success = self.parse_pockettopo()
-            elif software == 'topodroid':
+            elif software == 'TopoDroid':
                 success = self.parse_topodroid()
             self.success_run.pack() 
             if success:
                 winsound.MessageBeep()
-                self.success_run.configure(text='Uspješna konverzija!')
+                self.success_run.configure(text=f'{lcat["success_run_true"][self.lc]}')
+                self.open_gen_file.pack(padx=5, pady=5)
             else:
-                self.success_run.configure(text='Pogreška!')
+                self.success_run.configure(text=f'{lcat["success_run_false"][self.lc]}')
             self.gui.update()
+            self.gui.geometry("250x425")
+        
+        # Save last used software
+        lcat['last_used_software'] = software
+        file_path = os.path.join(application_path, 'config_settings.json')
+        with open(file_path, 'w') as fileWriter:
+            json.dump(lcat, fileWriter, indent=4)
         
     def create_write_file(self):
         global write_file_path
         self.sign = self.survey_sign.get()
         if self.sign == '':
-            messagebox.showwarning('Oprez','Bez predznaka Excel će prepoznati točke kao brojeve i maknuti nule!')
-        write_file_path = ctk.filedialog.asksaveasfilename(initialdir='SurveyScraper', title='Pohrani csv datoteku', 
-                                                        defaultextension=".csv", initialfile=f'{name_for_file}_glavni_vlakovi')
+            messagebox.showwarning('Warning',f'{lcat["sign_warning"][self.lc]}')
+        write_file_path = ctk.filedialog.asksaveasfilename(initialdir='SurveyScraper', title=f'{lcat["write_file_path"][self.lc]}', 
+                                                        defaultextension=".csv", initialfile=f'{name_for_file}{lcat["sufix"][self.lc]}')
         if write_file_path == '':
             return False
         try:
             with open(write_file_path, 'w') as file:
-                file.write(f"od,do,udaljenost,azimut,nagib\n")
+                file.write(f'{lcat["file.write"][self.lc]}\n')
                 return True
         except IOError:
-            messagebox.showerror('Pogreška - otvorena datoteka','Nije moguće kreirati csv datoteku! Molim zatvori datoteku!')
+            messagebox.showerror('Error',f'{lcat["IOError"][self.lc]}')
             return False
     
     def parse_pockettopo(self):
@@ -225,7 +277,7 @@ class MagneticDeclination_window():
     def __init__(self, main_gui):
         self.main_gui = main_gui
         self.gui_md = ctk.CTkToplevel()
-        self.gui_md.title('Magnetska deklinacija')
+        self.gui_md.title(f'{lcat["gui_md.title"][self.main_gui.lc]}')
         self.gui_md.grab_set()
         self.gui_md.resizable(False,False)
         self.md_val = 0
@@ -233,7 +285,7 @@ class MagneticDeclination_window():
         def get_location(location):
             global latitude, longitude
             if location != '':
-                self.get_coord_btn.configure(text='Povlačim...')
+                self.get_coord_btn.configure(text=f'{lcat["get_coord_btn"][self.main_gui.lc]}')
                 self.lat_input.delete(0,ctk.END)
                 self.lon_input.delete(0,ctk.END)
                 lat_lon_app = Retrieve_lat_lon(location)
@@ -243,39 +295,38 @@ class MagneticDeclination_window():
                 self.map.set_address(location, marker=True)
                 self.map.set_zoom(13)
             else:
-                messagebox.showerror('Pogreška','Prazan unos!')
-            self.get_coord_btn.configure(text='Povuci koordinate')
+                messagebox.showerror('Error',f'{lcat["location_error"][self.main_gui.lc]}')
+            self.get_coord_btn.configure(text=f'{lcat["get_coord_btn_default"][self.main_gui.lc]}')
 
         # LOCATION FRAME
         self.location_frame = ctk.CTkFrame(self.gui_md)
         self.location_frame.grid(row=0, column=0, rowspan=4, padx=10, pady=5)
-        self.location_frm_label = ctk.CTkLabel(self.location_frame, text="Lokacija:", font=('Roboto', 14))
+        self.location_frm_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["location_frm_label"][self.main_gui.lc]}:', font=('Roboto', 14))
         self.location_frm_label.grid(row=0, column=0, columnspan=3, padx=10, pady=5, sticky='ew')
-        self.location_label = ctk.CTkLabel(self.location_frame, text="Upiši lokaciju: ", font=('Roboto', 12))
+        self.location_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["location_label"][self.main_gui.lc]}: ', font=('Roboto', 12))
         self.location_label.grid(row=1, column=0, padx=10, pady=5, sticky='e')
         self.location_input = ctk.CTkEntry(self.location_frame, width=120, height=20, font=('Roboto', 12))
         self.location_input.grid(row=1, column=1, padx=10, pady=5)
-        self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text='Dohvati koordinate',
+        self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text=f'{lcat["get_coord_btn_label"][self.main_gui.lc]}',
                                         command=lambda: get_location(self.location_input.get()))
         self.get_coord_btn.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
-        Hovertip(self.location_input,'Možeš upisati i adresu (ulica i mjesto odvojeni zarezom)', hover_delay=500)
-        self.lat_label = ctk.CTkLabel(self.location_frame, text="Geografska širina: ", font=('Roboto', 12))
+        Hovertip(self.location_input,f'{lcat["hovertip"][self.main_gui.lc]}', hover_delay=500)
+        self.lat_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lat_label"][self.main_gui.lc]}: ', font=('Roboto', 12))
         self.lat_label.grid(row=3, column=0, padx=5, pady=5, sticky='e')
         self.lat_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12))
         self.lat_input.grid(row=3, column=1,  pady=5)
         self.lat_N = ctk.CTkLabel(self.location_frame, text="N", font=('Roboto', 12))
         self.lat_N.grid(row=3, column=2, padx=5, pady=5, sticky='w')
-        self.lon_label = ctk.CTkLabel(self.location_frame, text="Geografska dužina: ", font=('Roboto', 12))
+        self.lon_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lon_label"][self.main_gui.lc]}: ', font=('Roboto', 12))
         self.lon_label.grid(row=4, column=0, padx=5, pady=5, sticky='e')
         self.lon_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12))
         self.lon_input.grid(row=4, column=1,  pady=5)
         self.lon_E = ctk.CTkLabel(self.location_frame, text="E", font=('Roboto', 12))
         self.lon_E.grid(row=4, column=2, padx=5, pady=5, sticky='w')
-
         self.map = tkintermapview.TkinterMapView(self.location_frame, width=100, height=300, corner_radius=15)
         self.map.grid(row=5, column=0, columnspan=3, padx=5, pady=5, sticky='ew')
-        self.map.set_position(44.2672, 15.8422) #approximately a geographical midpoint of Croatia
-        self.map.set_zoom(6)
+        self.map.set_position(float(lcat["map.set_position_x"][self.main_gui.lc]),float(lcat["map.set_position_y"][self.main_gui.lc]))
+        self.map.set_zoom(float(lcat["map.set_zoom"][self.main_gui.lc]))
 
         # MODEL FRAME
         self.model_frame = ctk.CTkFrame(self.gui_md)
@@ -305,19 +356,19 @@ class MagneticDeclination_window():
         self.date_frame = ctk.CTkFrame(self.gui_md)
         self.date_frame.grid(row=1, column=1, padx=10, pady=5, sticky='news')
         self.date_frame.columnconfigure((0,1), weight=1)
-        self.date_label = ctk.CTkLabel(self.date_frame, text="Datum:", font=('Roboto', 14))
+        self.date_label = ctk.CTkLabel(self.date_frame, text=f'{lcat["date_label"][self.main_gui.lc]}: ', font=('Roboto', 14))
         self.date_label.grid(row=0, column=0, columnspan=2, padx=10, pady=5, sticky='ew')
-        self.date_day = ctk.CTkLabel(self.date_frame, text="Dan:")
+        self.date_day = ctk.CTkLabel(self.date_frame, text=f'{lcat["date_day"][self.main_gui.lc]}:')
         self.date_day.grid(row=1, column=0, padx=10, pady=5, sticky='e')
         selected_day = ctk.StringVar(value=current_day)
         self.day_combo = ctk.CTkComboBox(self.date_frame, width=60, height=20, values=[str(i) for i in range(1,32)], variable=selected_day)
         self.day_combo.grid(row=1, column=1, padx=5, pady=5, sticky='w')
-        self.date_month = ctk.CTkLabel(self.date_frame, text="Mjesec:")
+        self.date_month = ctk.CTkLabel(self.date_frame, text=f'{lcat["date_month"][self.main_gui.lc]}:')
         self.date_month.grid(row=2, column=0, padx=10, pady=5, sticky='e')
         selected_month = ctk.StringVar(value=current_month)
         self.month_combo = ctk.CTkComboBox(self.date_frame, width=60, height=20, values=[str(i) for i in range(1,13)], variable=selected_month)
         self.month_combo.grid(row=2, column=1, padx=5, pady=5, sticky='w')
-        self.date_year = ctk.CTkLabel(self.date_frame, text="Godina:")
+        self.date_year = ctk.CTkLabel(self.date_frame, text=f'{lcat["date_year"][self.main_gui.lc]}:')
         self.date_year.grid(row=3, column=0, padx=10, pady=5, sticky='e')
         selected_year = ctk.StringVar(value=current_year)
         year_range = [str(y) for y in range(2019,int(current_year)+2)]
@@ -328,9 +379,9 @@ class MagneticDeclination_window():
             try:
                 datetime.datetime(int(year),int(month),int(day))
             except ValueError:
-                messagebox.showerror('Pogreška','Datum je neispravan! Ponovi!')
+                messagebox.showerror('Error',f'{lcat["datetime.ValueError"][self.main_gui.lc]}')
             if self.lat_input.get() == '' or self.lon_input.get() == '':
-                messagebox.showerror('Pogreška','Lokacija nije definirana!')
+                messagebox.showerror('Error',f'{lcat["lat_lon_input_error"][self.main_gui.lc]}')
             else:
                 magn_decl_app = Retrieve_magn_decl(float(self.lat_input.get()), float(self.lon_input.get()), model, year, month, day)
                 md_val = float(f'{magn_decl_app.retrieve_magn_decl():.3f}')
@@ -345,10 +396,10 @@ class MagneticDeclination_window():
         self.decl_frame = ctk.CTkFrame(self.gui_md)
         self.decl_frame.grid(row=2, column=1, padx=10, pady=5, sticky='news')
         self.decl_frame.columnconfigure(0, weight=1)
-        self.calc_md_btn = ctk.CTkButton(self.decl_frame, width=100, text='Izračunaj',
+        self.calc_md_btn = ctk.CTkButton(self.decl_frame, width=100, text=f'{lcat["calc_md_btn"][self.main_gui.lc]}',
                                         command=lambda: get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()))
         self.calc_md_btn.grid(row=0, column=0, columnspan=3, padx=5, pady=10)
-        self.md_value_lbl = ctk.CTkLabel(self.decl_frame, text='Magn. deklinacija:')
+        self.md_value_lbl = ctk.CTkLabel(self.decl_frame, text=f'{lcat["md_value_lbl"][self.main_gui.lc]}:')
         self.md_value_lbl.grid(row=1, column=0, padx=5, pady=5)
         self.md_value = ctk.CTkLabel(self.decl_frame, text='', width=80, height=25, fg_color='white', corner_radius=5)
         self.md_value.grid(row=1, column=1, padx=5, pady=5)
@@ -357,9 +408,11 @@ class MagneticDeclination_window():
         self.md_value_deg.grid(row=1, column=2, padx=5, pady=5)
 
         # EXECUTE BUTTON
-        self.include_md_btn = ctk.CTkButton(self.gui_md, width=150, text='Uračunaj', command=apply_md)
+        self.include_md_btn = ctk.CTkButton(self.gui_md, width=150, text=f'{lcat["include_md_btn"][self.main_gui.lc]}', command=apply_md)
         self.include_md_btn.grid(row=3, column=1, padx=5, pady=5, sticky='ew')
         self.include_md_btn.configure(state='disabled')
 
 if __name__ == '__main__':
-    SurveyScraper()
+    # Run config right at the start
+    lang = config()
+    SurveyScraper(lang)

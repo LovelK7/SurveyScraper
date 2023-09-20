@@ -1,0 +1,164 @@
+{
+    "language_setting": "EN",
+    "last_used_software": "TopoDroid",
+    "software_lbl": [
+        "Odaberi program: ",
+        "Choose software: "
+    ],
+    "open_file": [
+        "Otvori datoteku s vlakovima",
+        "Open survey file"
+    ],
+    "survey_sign_lbl": [
+        "Predznak to\u010daka: ",
+        "Shot prefix: "
+    ],
+    "calc_magn_decl_btn": [
+        "Ura\u010dunaj deklinaciju",
+        "Calculate declination"
+    ],
+    "parse_file": [
+        "Generiraj CSV",
+        "Generate CSV"
+    ],
+    "readme_file_path": [
+        "surveyscraper_README.txt",
+        "surveyscraper_README_en.txt"
+    ],
+    "readme_text": [
+        "Pogre\u0161ka prilikom u\u010ditanja readme datoteke!",
+        "Error while reading readme file!"
+    ],
+    "file_path_csv": [
+        "Otvori csv datoteku",
+        "Open csv file"
+    ],
+    "file_path_txt": [
+        "Otvori txt datoteku",
+        "Open txt file"
+    ],
+    "file_path_error": [
+        "Nije otvorena pravilna datoteka!",
+        "Incorrect file was openned!"
+    ],
+    "success_run_true": [
+        "Uspje\u0161na konverzija!",
+        "Successful conversion!"
+    ],
+    "success_run_false": [
+        "Pogre\u0161ka!",
+        "Failed conversion!"
+    ],
+    "sign_warning": [
+        "Bez predznaka Excel \u0107e prepoznati to\u010dke kao brojeve i maknuti nule!",
+        "Without prefix Excel will read shots as numbers!"
+    ],
+    "write_file_path": [
+        "Pohrani csv datoteku",
+        "Save csv"
+    ],
+    "sufix": [
+        "_glavni_vlakovi",
+        "_main_shots"
+    ],
+    "file.write": [
+        "Od,Do,Udaljenost,Azimut,Nagib",
+        "From,To,Length,Direction,Inclination"
+    ],
+    "IOError": [
+        "Nije mogu\u0107e kreirati csv datoteku! Molim zatvori datoteku!",
+        "Unable to write to a csv file! Please close the file!"
+    ],
+    "gui_md.title": [
+        "Magnetska deklinacija",
+        "Magnetic declination"
+    ],
+    "get_coord_btn": [
+        "Povla\u010dim...",
+        "Fetching..."
+    ],
+    "location_error": [
+        "Prazan unos!",
+        "Empty input!"
+    ],
+    "get_coord_btn_default": [
+        "Povuci koordinate",
+        "Lookup coordinates"
+    ],
+    "location_frm_label": [
+        "Lokacija",
+        "Location"
+    ],
+    "location_label": [
+        "Upi\u0161i lokaciju",
+        "Enter location"
+    ],
+    "get_coord_btn_label": [
+        "Dohvati koordinate",
+        "Fetch coordinates"
+    ],
+    "hovertip": [
+        "Mo\u017ee\u0161 upisati i adresu (npr. ulica i mjesto odvojeni zarezom)",
+        "You can enter full address (e.g. street and city separated by comma)"
+    ],
+    "lat_label": [
+        "Geografska \u0161irina",
+        "Latitude"
+    ],
+    "lon_label": [
+        "Geografska du\u017eina",
+        "Longitude"
+    ],
+    "map.set_position_x": [
+        "44.2672",
+        "54.5260"
+    ],
+    "map.set_position_y": [
+        "15.8422",
+        "15.2551"
+    ],
+    "map.set_zoom": [
+        "6",
+        "3"
+    ],
+    "date_label": [
+        "Datum",
+        "Date"
+    ],
+    "date_day": [
+        "Dan",
+        "Day"
+    ],
+    "date_month": [
+        "Mjesec",
+        "Month"
+    ],
+    "date_year": [
+        "Godina",
+        "Year"
+    ],
+    "datetime.ValueError": [
+        "Datum je neispravan! Ponovi!",
+        "Date is inccorect! Please try again!"
+    ],
+    "lat_lon_input_error": [
+        "Lokacija nije definirana!",
+        "Location is not defined!"
+    ],
+    "calc_md_btn": [
+        "Izra\u010dunaj",
+        "Calculate"
+    ],
+    "md_value_lbl": [
+        "Magn. deklinacija",
+        "Magn. declination"
+    ],
+    "include_md_btn": [
+        "Ura\u010dunaj",
+        "Apply"
+    ],
+    "open_gen_file": [
+        "Otvori CSV",
+        "Open CSV"
+    ]
+}
