@@ -1,7 +1,8 @@
 # SurveyScraper
 Short code to read, filter, export and apply magnetic declination to cave survey files for Croatian caving community
 
-![surveyscraper_gui_EN_used](https://github.com/LovelK7/SurveyScraper/assets/114396834/0c0c4c25-725e-4397-8dfe-c47c0b2787fd)
+![surveyscraper_gui_EN_used](https://github.com/LovelK7/SurveyScraper/assets/114396834/c3c7ab33-67ae-4386-a392-28ab7c4f4d34)
+
 
 # Why?
 
