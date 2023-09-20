@@ -10,4 +10,4 @@ Currently, most commonly used digital cave survey tools (TopoDroid and PocketTop
 
 # How to use?
 
-Go to the releases section and download the whole zip file. Once unpacked, it is ready to run withou installing!
+Go to the releases section and download the whole zip file. Once unpacked, it is ready to run without installing!
