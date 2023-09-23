@@ -1,5 +1,5 @@
 {
-    "language_setting": "EN",
+    "language_setting": "HR",
     "last_used_software": "TopoDroid",
     "software_lbl": [
         "Odaberi program: ",
@@ -73,17 +73,9 @@
         "Magnetska deklinacija",
         "Magnetic declination"
     ],
-    "get_coord_btn": [
-        "Povla\u010dim...",
-        "Fetching..."
-    ],
     "location_error": [
         "Prazan unos!",
         "Empty input!"
-    ],
-    "get_coord_btn_default": [
-        "Povuci koordinate",
-        "Lookup coordinates"
     ],
     "location_frm_label": [
         "Lokacija",
@@ -95,7 +87,7 @@
     ],
     "get_coord_btn_label": [
         "Dohvati koordinate",
-        "Fetch coordinates"
+        "Lookup coordinates"
     ],
     "hovertip": [
         "Mo\u017ee\u0161 upisati i adresu (npr. ulica i mjesto odvojeni zarezom)",
@@ -145,6 +137,10 @@
         "Lokacija nije definirana!",
         "Location is not defined!"
     ],
+    "lat_lon_input_error_manual": [
+        "Pogre\u0161ka prilikom \u010ditanja podataka. Molim provjeri koordinate!",
+        "Error while reading data. Please check coordinates!"
+    ],
     "calc_md_btn": [
         "Izra\u010dunaj",
         "Calculate"
@@ -160,5 +156,9 @@
     "open_gen_file": [
         "Otvori CSV",
         "Open CSV"
+    ],
+    "show_md_value_lbl": [
+        "Mag. deklinacija",
+        "Magn. declination"
     ]
 }

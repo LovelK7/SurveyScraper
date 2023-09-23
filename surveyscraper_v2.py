@@ -37,7 +37,8 @@ class SurveyScraper():
     def __init__(self, lc):
         self.gui = ctk.CTk()
         self.gui.title('SurveyScraper')
-        self.gui.geometry("250x360")
+        self.dim_h = 330
+        self.gui.geometry(f"250x{self.dim_h}+200+200")
         self.gui.columnconfigure(0, weight=6)
         self.gui.columnconfigure(1, weight=1)
         self.md_val = 0
@@ -56,7 +57,7 @@ class SurveyScraper():
                 base_path = os.path.dirname(__file__)
             return os.path.join(base_path, relative_path)
         
-        #       MAIN FRAME
+        #   MAIN FRAME
         self.lang_var = ctk.StringVar(self.gui)
         self.lang_var.set(lc)
         self.gui_title = ctk.CTkLabel(self.gui, text='SurveyScraper', font=('Roboto', 18))
@@ -67,7 +68,7 @@ class SurveyScraper():
         self.readme = ctk.CTkButton(self.gui, text='?', width=20, font=('Roboto', 12), command=self.open_readme)
         self.readme.grid(row=0, column=2, padx=5, pady=5, sticky='e')
 
-        #       SOFTWARE FRAME
+        #   SOFTWARE FRAME
         self.software_frm = ctk.CTkFrame(self.gui)
         self.software_frm.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='ew')
         self.software_lbl = ctk.CTkLabel(self.software_frm, text=f'{lcat["software_lbl"][self.lc]}', font=('Roboto', 14))
@@ -84,11 +85,9 @@ class SurveyScraper():
         self.content.grid_columnconfigure(1, weight=1)
         self.open_file_img = ctk.CTkImage(Image.open(resource_path('img/open_file.png')), size=(15,15))
         self.open_file = ctk.CTkButton(self.content, width=180, text=f'{lcat["open_file"][self.lc]}', 
-                                    command=lambda: self.open_file_event(self.software.get()), 
-                                    compound='left', image=self.open_file_img)
+                                    command=lambda: self.open_file_event(self.software.get()), compound='left', image=self.open_file_img)
         self.open_file.grid(row=0, column=0, padx=5, pady=10, columnspan=2)
-        self.opened_file = ctk.CTkLabel(self.content, text='', width=200, height=25, 
-                                        fg_color='white', corner_radius=5)
+        self.opened_file = ctk.CTkLabel(self.content, text='', width=200, height=25, fg_color='white', corner_radius=5)
         self.opened_file.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
         self.opened_file.configure(state='disabled')
         self.opened_file.grid_remove()
@@ -100,6 +99,12 @@ class SurveyScraper():
         self.calc_magn_decl_btn = ctk.CTkButton(self.content, width=200, text=f'{lcat["calc_magn_decl_btn"][self.lc]}', 
                                         command=self.calc_magn_decl, compound='left', image=self.calc_md_img)
         self.calc_magn_decl_btn.grid(row=3, column=0, padx=5, pady=10, columnspan=2)
+        self.show_md_value_lbl = ctk.CTkLabel(self.content, text=f'{lcat["show_md_value_lbl"][self.lc]}:')
+        self.show_md_value_lbl.grid(row=4, column=0, padx=5, pady=5, sticky='e')
+        self.show_md_value_lbl.grid_remove()
+        self.show_md_value = ctk.CTkEntry(self.content, width=50, height=25, fg_color='white', corner_radius=5)
+        self.show_md_value.grid(row=4, column=1, padx=5, pady=5, sticky='w')
+        self.show_md_value.grid_remove()
 
         #   GENERATE FRAME
         self.content2 = ctk.CTkFrame(self.gui)
@@ -121,8 +126,12 @@ class SurveyScraper():
         self.open_gen_file.pack(padx=5, pady=5)
         self.open_gen_file.pack_forget()
 
-        #   RUN
+        #   RUN GUI
         self.gui.mainloop()
+    
+    def extend_gui_window(self, by=35):
+        self.dim_h += by
+        self.gui.geometry(f"250x{self.dim_h}")
     
     def open_readme(self):
         # find the readme file against dynamic app location
@@ -171,6 +180,8 @@ class SurveyScraper():
         if file_path:
             file_base_name = os.path.basename(file_path)
             name_for_file = os.path.splitext(file_base_name)[0]
+            if not self.opened_file.grid_info():
+                self.extend_gui_window()
             self.opened_file.grid()
             self.opened_file.configure(text=file_base_name)
             self.gui.update()
@@ -188,6 +199,8 @@ class SurveyScraper():
                 success = self.parse_pockettopo()
             elif software == 'TopoDroid':
                 success = self.parse_topodroid()
+            if not self.success_run.winfo_ismapped(): # if it has not run, extend the window
+                self.extend_gui_window(70)
             self.success_run.pack() 
             if success:
                 winsound.MessageBeep()
@@ -196,7 +209,6 @@ class SurveyScraper():
             else:
                 self.success_run.configure(text=f'{lcat["success_run_false"][self.lc]}')
             self.gui.update()
-            self.gui.geometry("250x425")
         
         # Save last used software
         lcat['last_used_software'] = software
@@ -282,22 +294,6 @@ class MagneticDeclination_window():
         self.gui_md.resizable(False,False)
         self.md_val = 0
 
-        def get_location(location):
-            global latitude, longitude
-            if location != '':
-                self.get_coord_btn.configure(text=f'{lcat["get_coord_btn"][self.main_gui.lc]}')
-                self.lat_input.delete(0,ctk.END)
-                self.lon_input.delete(0,ctk.END)
-                lat_lon_app = Retrieve_lat_lon(location)
-                latitude, longitude = lat_lon_app.retrieve_lat_lon()
-                self.lat_input.insert(0,f'{latitude:.4f}')
-                self.lon_input.insert(0,f'{longitude:.4f}')
-                self.map.set_address(location, marker=True)
-                self.map.set_zoom(13)
-            else:
-                messagebox.showerror('Error',f'{lcat["location_error"][self.main_gui.lc]}')
-            self.get_coord_btn.configure(text=f'{lcat["get_coord_btn_default"][self.main_gui.lc]}')
-
         # LOCATION FRAME
         self.location_frame = ctk.CTkFrame(self.gui_md)
         self.location_frame.grid(row=0, column=0, rowspan=4, padx=10, pady=5)
@@ -308,7 +304,7 @@ class MagneticDeclination_window():
         self.location_input = ctk.CTkEntry(self.location_frame, width=120, height=20, font=('Roboto', 12))
         self.location_input.grid(row=1, column=1, padx=10, pady=5)
         self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text=f'{lcat["get_coord_btn_label"][self.main_gui.lc]}',
-                                        command=lambda: get_location(self.location_input.get()))
+                                        command=lambda: self.get_location(self.location_input.get()))
         self.get_coord_btn.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
         Hovertip(self.location_input,f'{lcat["hovertip"][self.main_gui.lc]}', hover_delay=500)
         self.lat_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lat_label"][self.main_gui.lc]}: ', font=('Roboto', 12))
@@ -375,42 +371,62 @@ class MagneticDeclination_window():
         self.year_combo = ctk.CTkComboBox(self.date_frame, width=60, height=20, values=sorted(year_range, reverse=True), variable=selected_year)
         self.year_combo.grid(row=3, column=1, padx=5, pady=5, sticky='w')
 
-        def get_md(model, year, month, day):
-            try:
-                datetime.datetime(int(year),int(month),int(day))
-            except ValueError:
-                messagebox.showerror('Error',f'{lcat["datetime.ValueError"][self.main_gui.lc]}')
-            if self.lat_input.get() == '' or self.lon_input.get() == '':
-                messagebox.showerror('Error',f'{lcat["lat_lon_input_error"][self.main_gui.lc]}')
-            else:
-                magn_decl_app = Retrieve_magn_decl(float(self.lat_input.get()), float(self.lon_input.get()), model, year, month, day)
-                md_val = float(f'{magn_decl_app.retrieve_magn_decl():.3f}')
-                self.md_value.configure(text=md_val)
-                self.main_gui.md_val = md_val   #the characteristic of the main gui window (default value of 0) is now changed
-                self.include_md_btn.configure(state='normal')
-        
-        def apply_md():
-             self.gui_md.destroy()
-
         # CALCULATION FRAME
         self.decl_frame = ctk.CTkFrame(self.gui_md)
         self.decl_frame.grid(row=2, column=1, padx=10, pady=5, sticky='news')
         self.decl_frame.columnconfigure(0, weight=1)
         self.calc_md_btn = ctk.CTkButton(self.decl_frame, width=100, text=f'{lcat["calc_md_btn"][self.main_gui.lc]}',
-                                        command=lambda: get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()))
+                                        command=lambda: self.get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()))
         self.calc_md_btn.grid(row=0, column=0, columnspan=3, padx=5, pady=10)
         self.md_value_lbl = ctk.CTkLabel(self.decl_frame, text=f'{lcat["md_value_lbl"][self.main_gui.lc]}:')
         self.md_value_lbl.grid(row=1, column=0, padx=5, pady=5)
-        self.md_value = ctk.CTkLabel(self.decl_frame, text='', width=80, height=25, fg_color='white', corner_radius=5)
+        self.md_value = ctk.CTkEntry(self.decl_frame, width=50, height=25, fg_color='white', corner_radius=5)
         self.md_value.grid(row=1, column=1, padx=5, pady=5)
-        self.md_value.configure(state='disabled')
-        self.md_value_deg = ctk.CTkLabel(self.decl_frame, text='°')
-        self.md_value_deg.grid(row=1, column=2, padx=5, pady=5)
 
         # EXECUTE BUTTON
-        self.include_md_btn = ctk.CTkButton(self.gui_md, width=150, text=f'{lcat["include_md_btn"][self.main_gui.lc]}', command=apply_md)
+        self.include_md_btn = ctk.CTkButton(self.gui_md, width=150, text=f'{lcat["include_md_btn"][self.main_gui.lc]}', command=self.apply_md)
         self.include_md_btn.grid(row=3, column=1, padx=5, pady=5, sticky='ew')
         self.include_md_btn.configure(state='disabled')
+
+    def get_location(self, location):
+        global latitude, longitude
+        if location != '':
+            self.lat_input.delete(0,ctk.END)
+            self.lon_input.delete(0,ctk.END)
+            lat_lon_app = Retrieve_lat_lon(location)
+            latitude, longitude = lat_lon_app.retrieve_lat_lon()
+            self.lat_input.insert(0,f'{latitude:.4f}')
+            self.lon_input.insert(0,f'{longitude:.4f}')
+            self.map.set_address(location, marker=True)
+            self.map.set_zoom(13)
+        else:
+            messagebox.showerror('Error',f'{lcat["location_error"][self.main_gui.lc]}')
+
+    def get_md(self, model, year, month, day):
+        try:
+            datetime.datetime(int(year),int(month),int(day))
+        except ValueError:
+            messagebox.showerror('Error',f'{lcat["datetime.ValueError"][self.main_gui.lc]}')
+        if self.lat_input.get() == '' or self.lon_input.get() == '':
+            messagebox.showerror('Error',f'{lcat["lat_lon_input_error"][self.main_gui.lc]}')
+        else:
+            try:
+                magn_decl_app = Retrieve_magn_decl(float(self.lat_input.get()), float(self.lon_input.get()), model, year, month, day)
+                md_val = float(f'{magn_decl_app.retrieve_magn_decl():.3f}')
+                self.md_value.insert(0,f'{md_val}°')
+                self.md_value.configure(state='disabled')
+                self.main_gui.md_val = md_val   #the characteristic of the main gui window (default value of 0) is now changed
+                self.include_md_btn.configure(state='normal')
+            except:
+                messagebox.showerror('Error',f'{lcat["lat_lon_input_error_manual"][self.main_gui.lc]}')
+    
+    def apply_md(self):
+        self.gui_md.destroy()
+        if not self.main_gui.show_md_value.grid_info():
+            self.main_gui.extend_gui_window()
+        self.main_gui.show_md_value_lbl.grid()
+        self.main_gui.show_md_value.grid()
+        self.main_gui.show_md_value.insert(0,f'{self.main_gui.md_val}°')
 
 if __name__ == '__main__':
     # Run config right at the start
