@@ -5,6 +5,7 @@ import json
 import tkintermapview
 import datetime
 import winsound
+import subprocess
 import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
@@ -120,8 +121,15 @@ class SurveyScraper():
         self.success_run.pack(padx=5, pady=10)
         self.success_run.configure(state='disabled')
         self.success_run.pack_forget()
+
+        # A possible solution to shell opening, this surpresses opening cmd in exe file
+        def open_subprocess():
+            cmd = '"%s"' % write_file_path
+            subprocess.call(cmd, shell=True)
+
         self.open_gen_file = ctk.CTkButton(self.content2, text=f'{lcat["open_gen_file"][self.lc]}', 
-                                        command=lambda: os.system('"%s"' % write_file_path),
+                                        #command=lambda: os.system('"%s"' % write_file_path),
+                                        command=open_subprocess,
                                         compound='left', image=self.open_file_img)
         self.open_gen_file.pack(padx=5, pady=5)
         self.open_gen_file.pack_forget()
