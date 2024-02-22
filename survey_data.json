@@ -1,0 +1,51 @@
+{
+    "fix": "ed3",
+    "x": "",
+    "y": "",
+    "z": "",
+    "dcl": 4.332,
+    "name": "jama_Edison_2",
+    "descr": "ed",
+    "viz": [
+        "null",
+        {
+            "t1": "ed1",
+            "t2": "ed0",
+            "l": 6.13,
+            "a": 61.93,
+            "f": -82.4,
+            "left": "null",
+            "right": "null",
+            "up": "null",
+            "down": "null",
+            "note": "",
+            "flags": ""
+        },
+        {
+            "t1": "ed1",
+            "t2": "ed2",
+            "l": 4.02,
+            "a": 122.83,
+            "f": 71.9,
+            "left": "null",
+            "right": "null",
+            "up": "null",
+            "down": "null",
+            "note": "",
+            "flags": ""
+        },
+        {
+            "t1": "ed2",
+            "t2": "ed3",
+            "l": 1.91,
+            "a": 287.83,
+            "f": 66.6,
+            "left": "null",
+            "right": "null",
+            "up": "null",
+            "down": "null",
+            "note": "",
+            "flags": ""
+        }
+    ]
+}

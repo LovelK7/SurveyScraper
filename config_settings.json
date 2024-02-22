@@ -18,8 +18,8 @@
         "Calculate declination"
     ],
     "parse_file": [
-        "Generiraj CSV",
-        "Generate CSV"
+        "Pohrani u CSV",
+        "Save to CSV"
     ],
     "readme_file_path": [
         "surveyscraper_README.txt",
@@ -29,17 +29,13 @@
         "Pogre\u0161ka prilikom u\u010ditanja readme datoteke!",
         "Error while reading readme file!"
     ],
-    "file_path_csv": [
-        "Otvori csv datoteku",
-        "Open csv file"
-    ],
-    "file_path_txt": [
-        "Otvori txt datoteku",
-        "Open txt file"
+    "file_path": [
+        "Otvori datoteku",
+        "Open file"
     ],
     "file_path_error": [
         "Nije otvorena pravilna datoteka!",
-        "Incorrect file was openned!"
+        "Incorrect file was opened!"
     ],
     "success_run_true": [
         "Uspje\u0161na konverzija!",
@@ -53,7 +49,11 @@
         "Bez predznaka Excel \u0107e prepoznati to\u010dke kao brojeve i maknuti nule!",
         "Without prefix Excel will read shots as numbers!"
     ],
-    "write_file_path": [
+    "empty_write_path": [
+        "Putanja do datoteke za pohranu je prazna!",
+        "The file write path is empty!"
+    ],
+    "write_csv_file_path": [
         "Pohrani csv datoteku",
         "Save csv"
     ],
@@ -68,10 +68,6 @@
     "IOError": [
         "Nije mogu\u0107e kreirati csv datoteku! Molim zatvori datoteku!",
         "Unable to write to a csv file! Please close the file!"
-    ],
-    "gui_md.title": [
-        "Magnetska deklinacija",
-        "Magnetic declination"
     ],
     "location_error": [
         "Prazan unos!",
