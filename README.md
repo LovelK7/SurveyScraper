@@ -1,7 +1,7 @@
 # SurveyScraper
 Short code to read, filter, export, and apply magnetic declination to cave survey files and calculate cave dimensions for caving community
 
-<img src="https://github.com/LovelK7/SurveyScraper/assets/114396834/9e8a1d05-21ba-45e8-af1a-c223933e4013" width="500" height="500"><img src="https://github.com/LovelK7/SurveyScraper/assets/114396834/b9b01a2c-efcf-4806-8ef1-5d8414906471" width="500" height="500">
+<img src="https://github.com/LovelK7/SurveyScraper/assets/114396834/9e8a1d05-21ba-45e8-af1a-c223933e4013" width="400" height="400"><img src="https://github.com/LovelK7/SurveyScraper/assets/114396834/b9b01a2c-efcf-4806-8ef1-5d8414906471" width="400" height="400">
 
 # Why?
 
