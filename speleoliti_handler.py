@@ -27,6 +27,11 @@ class Speleoliti_online():
         if self.online:
             service = Service(driver_path)
             options = webdriver.ChromeOptions()
+            options.add_experimental_option('excludeSwitches', ['enable-logging']) # surpress DevTools listening
+            options.add_argument('--log-level=0')
+            options.set_capability("browserVersion", "117")
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--disable-logging')
             self.headless = headless
             if headless:
                 options.add_argument("--headless=new")

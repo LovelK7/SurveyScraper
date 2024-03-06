@@ -53,6 +53,8 @@ class SurveyScraper():
         self.cave_survey_opened = False
         self.original_angles = []
         self.offline = False
+        self.version = 'v3.1'
+
         if lc == 'HR':
             self.lc = 0
         elif lc == 'EN':
@@ -68,11 +70,17 @@ class SurveyScraper():
                 #base_path = os.path.abspath(".")
                 base_path = os.path.dirname(__file__)
             return os.path.join(base_path, relative_path)
-        # Set path to a current cave survey data
-        self.survey_data_file_path = resource_path('survey_data.json') 
         
+        # Set path to a current cave survey data
+        #self.survey_data_file_path = resource_path('survey_data.json')
+        self.survey_data_file_path = os.path.join(application_path, 'survey_data.json')
+
+        def return_image_path(image_name):
+            return os.path.join(application_path, 'img', f'{image_name}')
+        image_size = (20,20)
+
         # TITLE
-        self.gui_title = ctk.CTkLabel(self.gui, text='SurveyScraper v3.0', font=('Roboto', 18))
+        self.gui_title = ctk.CTkLabel(self.gui, text=f'SurveyScraper {self.version}', font=('Roboto', 18))
         self.gui_title.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
         # self.use_offline_var = ctk.StringVar(value="off")
@@ -80,9 +88,9 @@ class SurveyScraper():
         #                          variable=self.use_offline_var, onvalue="on", offvalue="off")
         # self.use_offline.grid(row=0, column=1, padx=5, pady=5, sticky='e')
         # self.use_offline.deselect()
-
+        speleoliti_img = ctk.CTkImage(Image.open(return_image_path('speleoliti.png')), size=image_size)
         self.open_speleoliti_btn = ctk.CTkButton(self.gui, text=f'Speleoliti Online', width=20, font=('Roboto', 15),
-                                                 command=self.open_speleoliti)
+                                                 command=self.open_speleoliti, compound='left', image=speleoliti_img)
         self.open_speleoliti_btn.grid(row=0, column=2, padx=5, pady=5, sticky='e')
         self.lang_var = ctk.StringVar(self.gui)
         self.lang_var.set(lc)
@@ -109,9 +117,9 @@ class SurveyScraper():
         #
         self.import_frm_lbl = ctk.CTkLabel(self.import_frm, text=f'Uvoz:', font=("Roboto", 14), fg_color='darkgray', corner_radius=5)
         self.import_frm_lbl.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky='ew')
-        self.open_file_img = ctk.CTkImage(Image.open(resource_path(os.path.join('img','open_file.png'))), size=(15,15))
+        open_file_img = ctk.CTkImage(Image.open(return_image_path('open_file.png')), size=image_size)
         self.open_file = ctk.CTkButton(self.import_frm, text=f'Otvori vlakove', 
-                                    command=self.open_file_event, compound='left', image=self.open_file_img)
+                                    command=self.open_file_event, compound='left', image=open_file_img)
         self.open_file.grid(row=1, column=0, padx=(5,5), pady=10, columnspan=2)
 
         self.opened_file = ctk.CTkLabel(self.import_frm, text='', width=200, height=25, fg_color='white', corner_radius=5)
@@ -122,15 +130,14 @@ class SurveyScraper():
         self.survey_sign_lbl.grid(row=3, column=0, padx=5, pady=5, sticky='e')
         self.shot_prefix_fld = ctk.CTkEntry(self.import_frm, width=50, height=25)
         self.shot_prefix_fld.grid(row=3, column=1, padx=5, pady=5, sticky='w')
-        self.calc_md_img = ctk.CTkImage(Image.open(resource_path('img/compass.png')), size=(15,15))
+        
         self.show_md_value_lbl = ctk.CTkLabel(self.import_frm, text=f'{lcat["show_md_value_lbl"][self.lc]}:')
         self.show_md_value_lbl.grid(row=4, column=0, padx=5, pady=5, sticky='e')
         self.show_md_value = ctk.CTkEntry(self.import_frm, width=50, height=25, fg_color='white', corner_radius=5)
         self.show_md_value.grid(row=4, column=1, padx=5, pady=5, sticky='w')
-
-        self.parse_img = ctk.CTkImage(Image.open(resource_path('img/generate.png')), size=(15,15))
+        generate_img = ctk.CTkImage(Image.open(return_image_path('generate.png')), size=image_size)
         self.apply_fix_md_btn = ctk.CTkButton(self.import_frm, text='Pohrani postavke', command=self.save_json,
-                                              compound='left', image=self.parse_img)
+                                              compound='left', image=generate_img)
         self.apply_fix_md_btn.grid(row=5, column=0, padx=(5,5), pady=5, columnspan=2)
         self.apply_fix_md_btn.configure(state='disabled')
 
@@ -145,8 +152,9 @@ class SurveyScraper():
         #self.save_json_file.grid(row=1, column=0, padx=5, pady=5, sticky='ew')
         # self.save_json_file.pack(padx=5, pady=5)
         # self.save_json_file.configure(state='disabled')
+        export_csv_image = ctk.CTkImage(Image.open(return_image_path('export_csv.png')), size=image_size)
         self.save_csv_file = ctk.CTkButton(self.export_frm, text='Izvezi u CSV', command=self.store_to_csv,
-                                        compound='left', image=self.parse_img)
+                                        compound='left', image=export_csv_image)
         self.save_csv_file.pack(padx=5, pady=5)
         self.save_csv_file.configure(state='disabled')
         self.export_original_angle_var = ctk.StringVar(value="on")
@@ -246,8 +254,10 @@ class SurveyScraper():
         self.location_label.grid(row=1, column=0, padx=10, pady=(5,0), sticky='e')
         self.location_input = ctk.CTkEntry(self.location_frame, width=150, height=20, font=('Roboto', 12))
         self.location_input.grid(row=1, column=1, padx=10, pady=(5,0))
+        coordinates_image = ctk.CTkImage(Image.open(return_image_path('coordinates.png')), size=image_size)
         self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text=f'{lcat["get_coord_btn_label"][self.lc]}',
-                                        command=lambda: self.get_location(self.location_input.get()))
+                                        command=lambda: self.get_location(self.location_input.get()),
+                                        compound='left', image=coordinates_image)
         self.get_coord_btn.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
         Hovertip(self.location_input,f'{lcat["hovertip"][self.lc]}', hover_delay=500)
         self.lat_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lat_label"][self.lc]}: ', font=('Roboto', 12))
@@ -321,9 +331,11 @@ class SurveyScraper():
         self.decl_frame = ctk.CTkFrame(self.mag_decl_tab_frame)
         self.decl_frame.grid(row=2, column=1, padx=(0,5), pady=5, sticky='nsew')
         self.decl_frame.columnconfigure((0,1), weight=1)
-        #
+
+        calc_md_img = ctk.CTkImage(Image.open(return_image_path('compass.png')), size=image_size)
         self.calc_md_btn = ctk.CTkButton(self.decl_frame, width=125, text=f'{lcat["calc_md_btn"][self.lc]}',
-                                        command=lambda: self.get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()))
+                                        command=lambda: self.get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()),
+                                        compound='left', image=calc_md_img)
         self.calc_md_btn.grid(row=0, column=0, columnspan=3, padx=5, pady=10)
         self.md_value_lbl = ctk.CTkLabel(self.decl_frame, text=f'{lcat["md_value_lbl"][self.lc]}:')
         self.md_value_lbl.grid(row=1, column=0, padx=5, pady=5, sticky='e')
@@ -398,6 +410,7 @@ class SurveyScraper():
         # Suggest the recent software to open file from
         filetypes = (("CSV file","*.csv"), ("Text file","*.txt*"), ("Walls file","*.srv*"), ("All files","*"))
         software_to_file = {
+            "None":"All files",
             "TopoDroid":"CSV file",
             "PocketTopo":"Text file",
             "Qave":"Walls file"
@@ -520,45 +533,46 @@ class SurveyScraper():
             messagebox.showwarning('Warning',f'{lcat["sign_warning"][self.lc]}')
         write_csv_file_path = ctk.filedialog.asksaveasfilename(initialdir='SurveyScraper', title=f'{lcat["write_csv_file_path"][self.lc]}', 
                                                     defaultextension=".csv", initialfile=f'{self.suggested_name_for_file}')
-        try:
-            with open(write_csv_file_path, 'w', newline='') as csv_file:
-                if not self.offline:
-                    description = (f"Ime objekta:,{self.cave_survey_json_data['name']}\n"
-                                    f"X:,{self.cave_survey_json_data['x']}\n"
-                                    f"Y:,{self.cave_survey_json_data['y']}\n"
-                                    f"Z:,{self.cave_survey_json_data['z']}\n"
-                                    f"Fiksna točka:,{self.cave_survey_json_data['fix']}\n"
-                                    f"Magn. deklinacija:,{self.cave_survey_json_data['dcl']}\n"
-                                    f"Poligonalna duljina:,{float(self.poly_length):.1f}\n"
-                                    f"Horizontalna duljina:,{float(self.hor_length):.1f}\n"
-                                    f"Visinska razlika:,{float(self.elevation):.1f}\n"
-                                    f"Dubina od fiksne točke:,{float(self.depth):.1f}\n")
-                else:
-                    description = (f"Ime objekta:,{self.cave_survey_json_data['name']}\n"
-                                    f"X:,{self.cave_survey_json_data['x']}\n"
-                                    f"Y:,{self.cave_survey_json_data['y']}\n"
-                                    f"Z:,{self.cave_survey_json_data['z']}\n"
-                                    f"Fiksna točka:,{self.cave_survey_json_data['fix']}\n")
-                csv_file.write(description)
-                fieldnames = list(self.cave_survey_json_data['viz'][1].keys())
-                if self.export_original_angle_var.get() == 'on':
-                    fieldnames += ['a_original']
-                    shots_to_process = zip(self.cave_survey_json_data['viz'][1:], self.original_shots)
-                else:
-                    # Create an iterator of shots without pairing with original_shots
-                    shots_to_process = ((shot, None) for shot in self.cave_survey_json_data['viz'][1:])  
-                writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-                writer.writeheader()
-                for shot, original_shot in shots_to_process:
-                    shot_copy = shot.copy()
-                    if original_shot is not None:
-                        shot_copy['a_original'] = round(float(original_shot['a']),2)
-                    writer.writerow(shot_copy)
-                fieldnames = []
-            self.success_run.configure(text='CSV pohranjen!')
-            winsound.MessageBeep()
-        except IOError:
-            messagebox.showerror('Error',f'{lcat["IOError"][self.lc]}')
+        if write_csv_file_path:
+            try:
+                with open(write_csv_file_path, 'w', encoding='utf-8-sig', errors='ignore', newline='') as csv_file:
+                    if not self.offline:
+                        description = (f"Ime objekta:,{self.cave_survey_json_data['name']}\n"
+                                        f"X:,{self.cave_survey_json_data['x']}\n"
+                                        f"Y:,{self.cave_survey_json_data['y']}\n"
+                                        f"Z:,{self.cave_survey_json_data['z']}\n"
+                                        f"Fiksna točka:,{self.cave_survey_json_data['fix']}\n"
+                                        f"Magn. deklinacija:,{self.cave_survey_json_data['dcl']}\n"
+                                        f"Poligonalna duljina:,{float(self.poly_length):.1f}\n"
+                                        f"Horizontalna duljina:,{float(self.hor_length):.1f}\n"
+                                        f"Visinska razlika:,{float(self.elevation):.1f}\n"
+                                        f"Dubina od fiksne točke:,{float(self.depth):.1f}\n")
+                    else:
+                        description = (f"Ime objekta:,{self.cave_survey_json_data['name']}\n"
+                                        f"X:,{self.cave_survey_json_data['x']}\n"
+                                        f"Y:,{self.cave_survey_json_data['y']}\n"
+                                        f"Z:,{self.cave_survey_json_data['z']}\n"
+                                        f"Fiksna točka:,{self.cave_survey_json_data['fix']}\n")
+                    csv_file.write(description)
+                    fieldnames = list(self.cave_survey_json_data['viz'][1].keys())
+                    if self.export_original_angle_var.get() == 'on':
+                        fieldnames += ['a_original']
+                        shots_to_process = zip(self.cave_survey_json_data['viz'][1:], self.original_shots)
+                    else:
+                        # Create an iterator of shots without pairing with original_shots
+                        shots_to_process = ((shot, None) for shot in self.cave_survey_json_data['viz'][1:])  
+                    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for shot, original_shot in shots_to_process:
+                        shot_copy = shot.copy()
+                        if original_shot is not None:
+                            shot_copy['a_original'] = round(float(original_shot['a']),2)
+                        writer.writerow(shot_copy)
+                    fieldnames = []
+                self.success_run.configure(text='CSV pohranjen!')
+                winsound.MessageBeep()
+            except IOError:
+                messagebox.showerror('Error',f'{lcat["IOError"][self.lc]}')
         
     # SPELEOLITI CALCULATION FUNCTION
     def run_speleoliti_calculation(self):
@@ -668,7 +682,7 @@ class SurveyScraper():
         return parsed
 
     def parse_topodroid(self):
-        with open(self.file_path,'r') as file:
+        with open(self.file_path,'r', encoding='utf-8') as file:
             date = next(file).split(',')[0][2:12]
             self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
             self.cave_name = next(file).split(',')[0][2:]
