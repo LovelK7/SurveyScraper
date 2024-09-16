@@ -36,7 +36,7 @@ class Speleoliti_online():
             if headless:
                 options.add_argument("--headless=new")
             try:
-                self.driver = webdriver.Chrome(service=service, options=options)
+                self.driver = webdriver.Chrome(options=options)
             except Exception as e:
                 messagebox.showerror('Error', f'Error initializing ChromeDriver: !\n\n{e}')
                 self.driver.quit()
