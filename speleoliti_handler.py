@@ -25,7 +25,6 @@ class Speleoliti_online():
             self.online = False
         #driver_path = 'c:/Users/Lovel.IZRK-LK-NB/.wdm/drivers/chromedriver/win64/120.0.6099.225/chromedriver-win32/chromedriver.exe'
         if self.online:
-            service = Service(driver_path)
             options = webdriver.ChromeOptions()
             options.add_experimental_option('excludeSwitches', ['enable-logging']) # surpress DevTools listening
             options.add_argument('--log-level=0')
