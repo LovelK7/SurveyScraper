@@ -53,7 +53,7 @@ class SurveyScraper():
         self.cave_survey_opened = False
         self.original_angles = []
         self.offline = False
-        self.version = 'v3.1'
+        self.version = 'v3.2'
 
         if lc == 'HR':
             self.lc = 0
@@ -94,7 +94,7 @@ class SurveyScraper():
         self.open_speleoliti_btn.grid(row=0, column=2, padx=5, pady=5, sticky='e')
         self.lang_var = ctk.StringVar(self.gui)
         self.lang_var.set(lc)
-        language_choice = ctk.CTkOptionMenu(self.gui, values=['HR'], variable=self.lang_var, anchor='center', 
+        language_choice = ctk.CTkOptionMenu(self.gui, values=['HR', 'EN'], variable=self.lang_var, anchor='center', 
                                             font=('Roboto', 15), width=20, command=self.set_language)
         language_choice.grid(row=0, column=3, padx=0, pady=5, sticky='e')
 
@@ -115,10 +115,10 @@ class SurveyScraper():
         self.import_frm = ctk.CTkFrame(self.main_tab_frame)
         self.import_frm.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
         #
-        self.import_frm_lbl = ctk.CTkLabel(self.import_frm, text=f'Uvoz:', font=("Roboto", 14), fg_color='darkgray', corner_radius=5)
+        self.import_frm_lbl = ctk.CTkLabel(self.import_frm, text=f'{lcat["import_frm_lbl"][self.lc]}:', font=("Roboto", 14), fg_color='darkgray', corner_radius=5)
         self.import_frm_lbl.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky='ew')
         open_file_img = ctk.CTkImage(Image.open(return_image_path('open_file.png')), size=image_size)
-        self.open_file = ctk.CTkButton(self.import_frm, text=f'Otvori vlakove', 
+        self.open_file = ctk.CTkButton(self.import_frm, text=f'{lcat["open_file"][self.lc]}', 
                                     command=self.open_file_event, compound='left', image=open_file_img)
         self.open_file.grid(row=1, column=0, padx=(5,5), pady=10, columnspan=2)
 
@@ -126,7 +126,7 @@ class SurveyScraper():
         self.opened_file.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
         self.opened_file.configure(state='disabled')
 
-        self.survey_sign_lbl = ctk.CTkLabel(self.import_frm, text='Prefiks točaka')
+        self.survey_sign_lbl = ctk.CTkLabel(self.import_frm, text=f'{lcat["survey_sign_lbl"][self.lc]}')
         self.survey_sign_lbl.grid(row=3, column=0, padx=5, pady=5, sticky='e')
         self.shot_prefix_fld = ctk.CTkEntry(self.import_frm, width=50, height=25)
         self.shot_prefix_fld.grid(row=3, column=1, padx=5, pady=5, sticky='w')
@@ -136,7 +136,7 @@ class SurveyScraper():
         self.show_md_value = ctk.CTkEntry(self.import_frm, width=50, height=25, fg_color='white', corner_radius=5)
         self.show_md_value.grid(row=4, column=1, padx=5, pady=5, sticky='w')
         generate_img = ctk.CTkImage(Image.open(return_image_path('generate.png')), size=image_size)
-        self.apply_fix_md_btn = ctk.CTkButton(self.import_frm, text='Pohrani postavke', command=self.save_json,
+        self.apply_fix_md_btn = ctk.CTkButton(self.import_frm, text=f'{lcat["apply_fix_md_btn"][self.lc]}', command=self.save_json,
                                               compound='left', image=generate_img)
         self.apply_fix_md_btn.grid(row=5, column=0, padx=(5,5), pady=5, columnspan=2)
         self.apply_fix_md_btn.configure(state='disabled')
@@ -145,7 +145,7 @@ class SurveyScraper():
         self.export_frm = ctk.CTkFrame(self.main_tab_frame)
         self.export_frm.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
         #
-        self.export_frm_lbl = ctk.CTkLabel(self.export_frm, text=f'Izvoz:', font=("Roboto",14), fg_color='darkgray', corner_radius=5)
+        self.export_frm_lbl = ctk.CTkLabel(self.export_frm, text=f'{lcat["export_frm_lbl"][self.lc]}:', font=("Roboto",14), fg_color='darkgray', corner_radius=5)
         self.export_frm_lbl.pack(padx=5, pady=5, fill='both')
         # self.save_json_file = ctk.CTkButton(self.export_frm, text='Pohrani', command=self.save_json,
         #                                 compound='left', image=self.parse_img)
@@ -153,12 +153,12 @@ class SurveyScraper():
         # self.save_json_file.pack(padx=5, pady=5)
         # self.save_json_file.configure(state='disabled')
         export_csv_image = ctk.CTkImage(Image.open(return_image_path('export_csv.png')), size=image_size)
-        self.save_csv_file = ctk.CTkButton(self.export_frm, text='Izvezi u CSV', command=self.store_to_csv,
+        self.save_csv_file = ctk.CTkButton(self.export_frm, text=f'{lcat["save_csv_file"][self.lc]}', command=self.store_to_csv,
                                         compound='left', image=export_csv_image)
         self.save_csv_file.pack(padx=5, pady=5)
         self.save_csv_file.configure(state='disabled')
         self.export_original_angle_var = ctk.StringVar(value="on")
-        self.export_original_angle = ctk.CTkSwitch(self.export_frm, text="Dodaj stupac izvornih azimuta", font=("Roboto",10),
+        self.export_original_angle = ctk.CTkSwitch(self.export_frm, text=f'{lcat["export_original_angle"][self.lc]}', font=("Roboto",10),
                                  variable=self.export_original_angle_var, onvalue="on", offvalue="off")
         self.export_original_angle.pack(padx=5, pady=5)
         self.export_original_angle.deselect()
@@ -182,28 +182,28 @@ class SurveyScraper():
         self.cave_data_frame.grid(row=0, rowspan=2, column=1, padx=5, pady=5, sticky='nsew')
         #
         # Cave name
-        self.cave_name_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'Ime objekta: ', font=("Roboto", 14), 
+        self.cave_name_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["cave_name_lbl"][self.lc]}: ', font=("Roboto", 14), 
                                           fg_color='darkgray', corner_radius=5)
         self.cave_name_lbl.grid(row=0, column=0, padx=5, pady=5, ipadx=35, sticky='e')
         self.cave_name_fld = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
         self.cave_name_fld.grid(row=0, column=1, padx=5, pady=5, sticky='w')
         # X
-        self.X_lbl = ctk.CTkLabel(self.cave_data_frame, text='Koordinata X: ')
+        self.X_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["X_lbl"][self.lc]}: ')
         self.X_lbl.grid(row=1, column=0, padx=5, pady=5, sticky='e')
         self.X = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
         self.X.grid(row=1, column=1, padx=5, pady=5, sticky='w')
         # Y
-        self.Y_lbl = ctk.CTkLabel(self.cave_data_frame, text='Koordinata Y: ')
+        self.Y_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["Y_lbl"][self.lc]}: ')
         self.Y_lbl.grid(row=2, column=0, padx=5, pady=5, sticky='e')
         self.Y = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
         self.Y.grid(row=2, column=1, padx=5, pady=5, sticky='w')
         # Z
-        self.Z_lbl = ctk.CTkLabel(self.cave_data_frame, text='Nadmorska visina Z: ')
+        self.Z_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["Z_lbl"][self.lc]}: ')
         self.Z_lbl.grid(row=3, column=0, padx=5, pady=5, sticky='e')
         self.Z = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
         self.Z.grid(row=3, column=1, padx=5, pady=5, sticky='w')
         # File Name
-        self.file_name_lbl = ctk.CTkLabel(self.cave_data_frame, text='Ime datoteke za pohranu: ')
+        self.file_name_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["file_name_lbl"][self.lc]}: ')
         self.file_name_lbl.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
         self.file_name_fld = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width+30, height=25)
         self.file_name_fld.grid(row=5, column=0, columnspan=2, padx=5, pady=5, sticky='ew')
@@ -214,27 +214,27 @@ class SurveyScraper():
         # self.description.grid(row=5, column=1, padx=5, pady=5, sticky='w')
 
         # Fixed point
-        self.fixed_station_lbl = ctk.CTkLabel(self.cave_data_frame, text='Fiksna točka: ')
+        self.fixed_station_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["fixed_station_lbl"][self.lc]}: ')
         self.fixed_station_lbl.grid(row=6, column=0, padx=5, pady=5, sticky='e')
         self.fixed_station_fld = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
         self.fixed_station_fld.grid(row=6, column=1, padx=5, pady=5, sticky='w')
         # Poly Length
-        self.poly_length_lbl = ctk.CTkLabel(self.cave_data_frame, text='Poligonalna duljina: ')
+        self.poly_length_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["poly_length_lbl"][self.lc]}: ')
         self.poly_length_lbl.grid(row=7, column=0, padx=5, pady=5, sticky='e')
         self.poly_length_fld = ctk.CTkLabel(self.cave_data_frame, width=50, height=25, text='')
         self.poly_length_fld.grid(row=7, column=1, padx=5, pady=5, sticky='w')
         # Horizontal Length
-        self.hor_length_lbl = ctk.CTkLabel(self.cave_data_frame, text='Horizontalna duljina: ')
+        self.hor_length_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["hor_length_lbl"][self.lc]}: ')
         self.hor_length_lbl.grid(row=8, column=0, padx=5, pady=5, sticky='e')
         self.hor_length_fld = ctk.CTkLabel(self.cave_data_frame, width=50, height=25, text='')
         self.hor_length_fld.grid(row=8, column=1, padx=5, pady=5, sticky='w')
         # Elevation
-        self.elevation_lbl = ctk.CTkLabel(self.cave_data_frame, text='Visinska razlika: ')
+        self.elevation_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["elevation_lbl"][self.lc]}: ')
         self.elevation_lbl.grid(row=9, column=0, padx=5, pady=5, sticky='e')
         self.elevation_fld = ctk.CTkLabel(self.cave_data_frame, width=50, height=25, text='')
         self.elevation_fld.grid(row=9, column=1, padx=5, pady=5, sticky='w')
         # Depth
-        self.depth_lbl = ctk.CTkLabel(self.cave_data_frame, text='Dubina od fiksne točke: ')
+        self.depth_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["depth_lbl"][self.lc]}: ')
         self.depth_lbl.grid(row=10, column=0, padx=5, pady=5, sticky='e')
         self.depth_fld = ctk.CTkLabel(self.cave_data_frame, width=50, height=25, text='')
         self.depth_fld.grid(row=10, column=1, padx=5, pady=5, sticky='w')
@@ -394,14 +394,56 @@ class SurveyScraper():
     def set_language(self, language='HR'):
         # Change language 
         lcat['language_setting'] = language
+        # Update self.lc based on language
         if language == 'HR': 
-             messagebox.showinfo(message='Za promjenu jezika molim ponovno pokreni program!')
+            self.lc = 0
         elif language == 'EN':
-             messagebox.showinfo(message='For changing the language please restart the program!')
-        # store language setting to a language catalog file
+            self.lc = 1
+        
+        # Update all GUI text elements
+        self.update_gui_language()
+        
+        # Store language setting to a language catalog file
         file_path = os.path.join(application_path, 'config_settings.json')
         with open(file_path, 'w') as fileWriter:
             json.dump(lcat, fileWriter, indent=4)
+    
+    def update_gui_language(self):
+        """Update all GUI text elements when language changes"""
+        # Main tab elements
+        self.import_frm_lbl.configure(text=f'{lcat["import_frm_lbl"][self.lc]}')
+        self.open_file.configure(text=f'{lcat["open_file"][self.lc]}')
+        self.survey_sign_lbl.configure(text=f'{lcat["survey_sign_lbl"][self.lc]}')
+        self.show_md_value_lbl.configure(text=f'{lcat["show_md_value_lbl"][self.lc]}:')
+        self.apply_fix_md_btn.configure(text=f'{lcat["apply_fix_md_btn"][self.lc]}')
+        self.export_frm_lbl.configure(text=f'{lcat["export_frm_lbl"][self.lc]}:')
+        self.save_csv_file.configure(text=f'{lcat["save_csv_file"][self.lc]}')
+        self.export_original_angle.configure(text=f'{lcat["export_original_angle"][self.lc]}')
+        
+        # Cave data frame
+        self.cave_name_lbl.configure(text=f'{lcat["cave_name_lbl"][self.lc]}: ')
+        self.X_lbl.configure(text=f'{lcat["X_lbl"][self.lc]}: ')
+        self.Y_lbl.configure(text=f'{lcat["Y_lbl"][self.lc]}: ')
+        self.Z_lbl.configure(text=f'{lcat["Z_lbl"][self.lc]}: ')
+        self.file_name_lbl.configure(text=f'{lcat["file_name_lbl"][self.lc]}: ')
+        self.fixed_station_lbl.configure(text=f'{lcat["fixed_station_lbl"][self.lc]}: ')
+        self.poly_length_lbl.configure(text=f'{lcat["poly_length_lbl"][self.lc]}: ')
+        self.hor_length_lbl.configure(text=f'{lcat["hor_length_lbl"][self.lc]}: ')
+        self.elevation_lbl.configure(text=f'{lcat["elevation_lbl"][self.lc]}: ')
+        self.depth_lbl.configure(text=f'{lcat["depth_lbl"][self.lc]}: ')
+        
+        # MagDec tab elements
+        self.location_frm_label.configure(text=f'{lcat["location_frm_label"][self.lc]}:')
+        self.location_label.configure(text=f'{lcat["location_label"][self.lc]}: ')
+        self.get_coord_btn.configure(text=f'{lcat["get_coord_btn_label"][self.lc]}')
+        self.lat_label.configure(text=f'{lcat["lat_label"][self.lc]}: ')
+        self.lon_label.configure(text=f'{lcat["lon_label"][self.lc]}: ')
+        self.date_label.configure(text=f'{lcat["date_label"][self.lc]}: ')
+        self.date_day.configure(text=f'{lcat["date_day"][self.lc]}:')
+        self.date_month.configure(text=f'{lcat["date_month"][self.lc]}:')
+        self.date_year.configure(text=f'{lcat["date_year"][self.lc]}:')
+        self.calc_md_btn.configure(text=f'{lcat["calc_md_btn"][self.lc]}')
+        self.md_value_lbl.configure(text=f'{lcat["md_value_lbl"][self.lc]}:')
 
     #   CAVE SURVEY FILE IMPORT
     def open_file_event(self):
@@ -438,6 +480,11 @@ class SurveyScraper():
             file_base_name = os.path.basename(self.file_path)
             self.suggested_name_for_file = os.path.splitext(file_base_name)[0] + f'{lcat["sufix"][self.lc]}'
             self.cave_survey_json_data = {"fix": "","x": "","y": "","z": "","dcl": "","name": "","descr": "","viz": ["null"]}
+            # Clear cached attributes from previous file
+            if hasattr(self, 'original_shots'):
+                delattr(self, 'original_shots')
+            if hasattr(self, 'original_fixed_station_name'):
+                delattr(self, 'original_fixed_station_name')
             self.create_json() # create empty json file
             self.parse_event(self.software)
             # continue if parsed successfully
@@ -755,7 +802,11 @@ class SurveyScraper():
                 latitude, longitude = lat_lon_app.retrieve_lat_lon()
                 self.lat_input.insert(0, f'{latitude:.4f}')
                 self.lon_input.insert(0, f'{longitude:.4f}')
-                self.map.set_address(location, marker=True)
+                # Delete previous marker if it exists
+                if hasattr(self, 'location_marker') and self.location_marker:
+                    self.location_marker.delete()
+                self.map.set_position(latitude, longitude)
+                self.location_marker = self.map.set_marker(latitude, longitude, text=location)
                 self.map.set_zoom(13)
             except:
                 messagebox.showerror('Error','Nije moguće dohvatiti koordinate! Provjeri internet vezu!')

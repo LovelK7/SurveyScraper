@@ -1,6 +1,6 @@
 {
     "language_setting": "HR",
-    "last_used_software": "TopoDroid",
+    "last_used_software": "PocketTopo",
     "software_lbl": [
         "Odaberi program: ",
         "Choose software: "
@@ -156,5 +156,65 @@
     "show_md_value_lbl": [
         "Mag. deklinacija",
         "Magn. declination"
+    ],
+    "import_frm_lbl": [
+        "Uvoz",
+        "Import"
+    ],
+    "export_frm_lbl": [
+        "Izvoz",
+        "Export"
+    ],
+    "apply_fix_md_btn": [
+        "Pohrani postavke",
+        "Save settings"
+    ],
+    "save_csv_file": [
+        "Izvezi u CSV",
+        "Export to CSV"
+    ],
+    "export_original_angle": [
+        "Dodaj stupac izvornih azimuta",
+        "Add original azimuth column"
+    ],
+    "cave_name_lbl": [
+        "Ime objekta",
+        "Cave name"
+    ],
+    "X_lbl": [
+        "Koordinata X",
+        "Coordinate X"
+    ],
+    "Y_lbl": [
+        "Koordinata Y",
+        "Coordinate Y"
+    ],
+    "Z_lbl": [
+        "Nadmorska visina Z",
+        "Elevation Z"
+    ],
+    "file_name_lbl": [
+        "Ime datoteke za pohranu",
+        "File name to save"
+    ],
+    "fixed_station_lbl": [
+        "Fiksna to\u010dka",
+        "Fixed station"
+    ],
+    "poly_length_lbl": [
+        "Poligonalna duljina",
+        "Polygon length"
+    ],
+    "hor_length_lbl": [
+        "Horizontalna duljina",
+        "Horizontal length"
+    ],
+    "elevation_lbl": [
+        "Visinska razlika",
+        "Elevation difference"
+    ],
+    "depth_lbl": [
+        "Dubina od fiksne to\u010dke",
+        "Depth from fixed station"
     ]
 }
