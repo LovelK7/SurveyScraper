@@ -1,6 +1,6 @@
 {
     "language_setting": "HR",
-    "last_used_software": "PocketTopo",
+    "last_used_software": "TopoDroid",
     "software_lbl": [
         "Odaberi program: ",
         "Choose software: "
@@ -176,6 +176,10 @@
     "export_original_angle": [
         "Dodaj stupac izvornih azimuta",
         "Add original azimuth column"
+    ],
+    "keep_splays": [
+        "Uklju\u010di pomo\u0107ne vlakove",
+        "Include splays"
     ],
     "cave_name_lbl": [
         "Ime objekta",

@@ -163,6 +163,12 @@ class SurveyScraper():
         self.export_original_angle.pack(padx=5, pady=5)
         self.export_original_angle.deselect()
         self.export_original_angle.configure(state='disabled')
+        self.keep_splays_var = ctk.StringVar(value="off")
+        self.keep_splays = ctk.CTkSwitch(self.export_frm, text=f'{lcat["keep_splays"][self.lc]}', font=("Roboto",10),
+                                 variable=self.keep_splays_var, onvalue="on", offvalue="off")
+        self.keep_splays.pack(padx=5, pady=5)
+        self.keep_splays.deselect()
+        self.keep_splays.configure(state='disabled')
         # self.open_gen_file = ctk.CTkButton(self.export_frm, text=f'{lcat["open_gen_file"][self.lc]}', 
         #                                 #command=lambda: os.system('"%s"' % write_csv_file_path),
         #                                 command=open_subprocess,
@@ -419,6 +425,7 @@ class SurveyScraper():
         self.export_frm_lbl.configure(text=f'{lcat["export_frm_lbl"][self.lc]}:')
         self.save_csv_file.configure(text=f'{lcat["save_csv_file"][self.lc]}')
         self.export_original_angle.configure(text=f'{lcat["export_original_angle"][self.lc]}')
+        self.keep_splays.configure(text=f'{lcat["keep_splays"][self.lc]}')
         
         # Cave data frame
         self.cave_name_lbl.configure(text=f'{lcat["cave_name_lbl"][self.lc]}: ')
@@ -511,9 +518,13 @@ class SurveyScraper():
                 self.opened_file.configure(text=file_base_name)
                 self.apply_fix_md_btn.configure(state='normal')
                 self.save_csv_file.configure(state='normal')
+                # Enable keep_splays only for TopoDroid
+                if self.software == 'TopoDroid':
+                    self.keep_splays.configure(state='normal')
+                else:
+                    self.keep_splays.configure(state='disabled')
                 self.gui.update()
-            else:
-                messagebox.showerror('Error','Error due to failed cave survey file parsing!')
+            # Generic error is no longer shown here - specific errors shown in parse functions
     
     # APPLY CHANGES
     def save_json(self):
@@ -601,17 +612,29 @@ class SurveyScraper():
                                         f"Z:,{self.cave_survey_json_data['z']}\n"
                                         f"Fiksna točka:,{self.cave_survey_json_data['fix']}\n")
                     csv_file.write(description)
-                    fieldnames = list(self.cave_survey_json_data['viz'][1].keys())
+                    
+                    # Filter shots based on keep_splays option
+                    if self.software == 'TopoDroid' and self.keep_splays_var.get() == 'off':
+                        # Exclude splays - only keep shots where is_splay is False or doesn't exist
+                        filtered_shots = [shot for shot in self.cave_survey_json_data['viz'][1:] if not shot.get('is_splay', False)]
+                    else:
+                        # Include all shots
+                        filtered_shots = self.cave_survey_json_data['viz'][1:]
+                    
+                    # Remove is_splay field from output if it exists
+                    fieldnames = [key for key in self.cave_survey_json_data['viz'][1].keys() if key != 'is_splay']
                     if self.export_original_angle_var.get() == 'on':
                         fieldnames += ['a_original']
-                        shots_to_process = zip(self.cave_survey_json_data['viz'][1:], self.original_shots)
+                        shots_to_process = zip(filtered_shots, self.original_shots)
                     else:
                         # Create an iterator of shots without pairing with original_shots
-                        shots_to_process = ((shot, None) for shot in self.cave_survey_json_data['viz'][1:])  
+                        shots_to_process = ((shot, None) for shot in filtered_shots)  
                     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                     writer.writeheader()
                     for shot, original_shot in shots_to_process:
                         shot_copy = shot.copy()
+                        # Remove is_splay field from output
+                        shot_copy.pop('is_splay', None)
                         if original_shot is not None:
                             shot_copy['a_original'] = round(float(original_shot['a']),2)
                         writer.writerow(shot_copy)
@@ -623,8 +646,10 @@ class SurveyScraper():
         
     # SPELEOLITI CALCULATION FUNCTION
     def run_speleoliti_calculation(self):
+        print("run_speleoliti_calculation started")  # Debug
         #try:
         self.speleoliti_app_headless = Speleoliti_online(headless=True, survey_path=self.survey_data_file_path)
+        print(f"Speleoliti online status: {self.speleoliti_app_headless.online}")  # Debug
         if self.speleoliti_app_headless.online:
             # refresh toplevel window GUI
             opening_speleoliti_label = ctk.CTkLabel(self.loading_window, text="Povezujem se sa Speleoliti online...")
@@ -665,12 +690,22 @@ class SurveyScraper():
             parsed = self.parse_qave()
         elif software == 'PocketTopo':
             parsed = self.parse_pockettopo()
+        
+        if not parsed:
+            self.loading_window.destroy()
+            print("Parsing failed, returning early")  # Debug
+            return
+            
         if parsed:
+            print("Parsing successful, starting Speleoliti calculation")  # Debug
             try:
                 threading.Thread(target=self.run_speleoliti_calculation()).start()
                 winsound.MessageBeep()
                 self.success_run.configure(text='Uspješan uvoz i obrada!')
             except Exception as e:
+                print(f"Speleoliti calculation error: {str(e)}")  # Debug
+                import traceback
+                traceback.print_exc()
                 parsed = False
                 self.success_run.configure(text='Neuspješan uvoz i obrada!')
             self.loading_window.destroy()
@@ -729,35 +764,76 @@ class SurveyScraper():
         return parsed
 
     def parse_topodroid(self):
-        with open(self.file_path,'r', encoding='utf-8') as file:
-            date = next(file).split(',')[0][2:12]
-            self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
-            self.cave_name = next(file).split(',')[0][2:]
-            next(file)
-            next(file)
-            for row in file:
-                shot = row.split(',')         
-                if shot[1] != '-': #filter for main shots
-                    shot_from = shot[0][0:shot[0].find('@')]
-                    shot_to = shot[1][0:shot[1].find('@')]
-                    main_shot = {
-                                "t1": shot_from,
-                                "t2": shot_to,
-                                "l": float(shot[2]),
-                                "a": float(shot[3]),
-                                "f": float(shot[4]),
-                                "left": "null",
-                                "right": "null",
-                                "up": "null",
-                                "down": "null",
-                                "note": "",
-                                "flags": ""
-                            }
-                    self.cave_survey_json_data["viz"].append(main_shot)
-        with open(write_json_file_path, 'w') as file:
-            json.dump(self.cave_survey_json_data, file, indent=4) 
-        parsed = True
-        return parsed
+        print("parse_topodroid called")  # Debug
+        try:
+            print(f"Opening file: {self.file_path}")  # Debug
+            with open(self.file_path,'r', encoding='utf-8') as file:
+                date = next(file).split(',')[0][2:12]
+                print(f"Date line: {date}")  # Debug
+                self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
+                self.cave_name = next(file).split(',')[0][2:]
+                print(f"Cave name: {self.cave_name}")  # Debug
+                next(file)
+                next(file)
+                shot_count = 0
+                for row in file:
+                    shot = row.strip().split(',')         
+                    if len(shot) >= 5 and shot[1] != '-': #main shots
+                        shot_from = shot[0][0:shot[0].find('@')]
+                        shot_to = shot[1][0:shot[1].find('@')]
+                        main_shot = {
+                                    "t1": shot_from,
+                                    "t2": shot_to,
+                                    "l": float(shot[2]),
+                                    "a": float(shot[3]),
+                                    "f": float(shot[4]),
+                                    "left": "null",
+                                    "right": "null",
+                                    "up": "null",
+                                    "down": "null",
+                                    "note": "",
+                                    "flags": "",
+                                    "is_splay": False
+                                }
+                        self.cave_survey_json_data["viz"].append(main_shot)
+                        shot_count += 1
+                    elif len(shot) >= 5 and shot[1] == '-': # splays - always parse them
+                        shot_from = shot[0][0:shot[0].find('@')]
+                        shot_to = '*' + shot_from  # Append asterisk as prefix for splay recognition in Speleoliti
+                        splay_shot = {
+                                    "t1": shot_from,
+                                    "t2": shot_to,
+                                    "l": float(shot[2]),
+                                    "a": float(shot[3]),
+                                    "f": float(shot[4]),
+                                    "left": "null",
+                                    "right": "null",
+                                    "up": "null",
+                                    "down": "null",
+                                    "note": "",
+                                    "flags": "",
+                                    "is_splay": True
+                                }
+                        self.cave_survey_json_data["viz"].append(splay_shot)
+                        shot_count += 1
+                print(f"Total shots parsed: {shot_count}")  # Debug
+            
+            # Save to JSON - filter out splays for Speleoliti processing
+            # Speleoliti can't handle splays properly, so we only send main shots
+            data_for_speleoliti = self.cave_survey_json_data.copy()
+            data_for_speleoliti["viz"] = ["null"] + [shot for shot in self.cave_survey_json_data["viz"][1:] if not shot.get('is_splay', False)]
+            
+            with open(write_json_file_path, 'w') as file:
+                json.dump(data_for_speleoliti, file, indent=4) 
+            print("Parsing successful, returning True")  # Debug
+            parsed = True
+            return parsed
+        except Exception as e:
+            print(f"TopoDroid parsing error: {str(e)}")  # Print to console for debugging
+            import traceback
+            traceback.print_exc()  # Print full traceback
+            messagebox.showerror('TopoDroid Parsing Error', f'Error details:\n\n{str(e)}')
+            return False
     
     def parse_qave(self):
         with open(self.file_path,'r') as file:
