@@ -18,40 +18,51 @@ class Speleoliti_online():
         """Initialize Selenium ChromeDriver"""
 
         self.online = True
+        self.driver = None
         try:
+            # ChromeDriverManager will automatically download the correct version
             driver_path = ChromeDriverManager().install()
-        except: # Exception as e:
-            #messagebox.showerror('Error', f'Error accessing Speleoliti Online !\n\n{e} \n\n Try using SurveyScraper offline!')
-            self.online = False
-        #driver_path = 'c:/Users/Lovel.IZRK-LK-NB/.wdm/drivers/chromedriver/win64/120.0.6099.225/chromedriver-win32/chromedriver.exe'
-        if self.online:
+            
             options = webdriver.ChromeOptions()
             options.add_experimental_option('excludeSwitches', ['enable-logging']) # surpress DevTools listening
             options.add_argument('--log-level=0')
-            options.set_capability("browserVersion", "117")
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--disable-logging')
+            options.add_argument('--no-sandbox')  # Helps with compatibility
+            options.add_argument('--disable-gpu')  # Helps with compatibility
+            
             self.headless = headless
             if headless:
                 options.add_argument("--headless=new")
-            try:
-                self.driver = webdriver.Chrome(options=options)
-            except Exception as e:
-                messagebox.showerror('Error', f'Error initializing ChromeDriver: !\n\n{e}')
-                self.driver.quit()
+            
+            # Initialize ChromeDriver with Service
+            service = Service(driver_path)
+            self.driver = webdriver.Chrome(service=service, options=options)
+            
             if not headless:
                 self.driver.minimize_window()
                 self.handle_of_the_window = self.driver.current_window_handle
-            self.url = f"https://speleoliti.speleo.net/online/app_en.html"
-            # Access survey data file
-            survey_data_filename = 'survey_data.json'
-            if getattr(sys,'frozen', False): #check if the app runs as a script or as a frozen exe file
-                self.survey_data_filepath = os.path.join(os.path.dirname(sys.executable), survey_data_filename)
-            elif __file__:
-                self.survey_data_filepath = os.path.join(os.path.dirname(__file__), survey_data_filename)
-            else:
-                self.survey_data_filepath = survey_path    
-
+                
+        except Exception as e:
+            messagebox.showerror('Error', f'Error initializing ChromeDriver: !\n\n{e}\n\nTry using SurveyScraper offline!')
+            self.online = False
+            if self.driver:
+                try:
+                    self.driver.quit()
+                except:
+                    pass
+            return
+            
+        self.url = f"https://speleoliti.speleo.net/online/app_en.html"
+        # Access survey data file
+        survey_data_filename = 'survey_data.json'
+        if getattr(sys,'frozen', False): #check if the app runs as a script or as a frozen exe file
+            self.survey_data_filepath = os.path.join(os.path.dirname(sys.executable), survey_data_filename)
+        elif __file__:
+            self.survey_data_filepath = os.path.join(os.path.dirname(__file__), survey_data_filename)
+        else:
+            self.survey_data_filepath = survey_path    
+    
     def open_empty_object(self):
         """Opens an empty window of Speleoliti Online"""
         self.driver.get(self.url)
