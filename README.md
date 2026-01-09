@@ -11,4 +11,3 @@ Currently, most commonly used digital cave survey apps (TopoDroid, Qave and Pock
 
 Go to the releases section and download the whole zip file. Once unpacked, it is ready to run without installing!
 Note: Windows Defender might recognize exe file as a virus. I assure you it is not! :)
-Note2: Version v3.1 is in Croatian only, so please use stable version v2.0 until new version with English language pack.

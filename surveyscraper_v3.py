@@ -7,6 +7,7 @@ import tkintermapview
 import datetime
 import winsound
 import threading
+import traceback
 import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
@@ -61,36 +62,29 @@ class SurveyScraper():
             self.lc = 1
         self.last_used_software = last_used
 
-        def resource_path(relative_path):
-            """ Get absolute path to resource, works for dev and for PyInstaller."""
-            try:
-                # PyInstaller creates a temp folder and stores path in _MEIPASS
-                base_path = sys._MEIPASS
-            except Exception:
-                #base_path = os.path.abspath(".")
-                base_path = os.path.dirname(__file__)
-            return os.path.join(base_path, relative_path)
-        
         # Set path to a current cave survey data
-        #self.survey_data_file_path = resource_path('survey_data.json')
         self.survey_data_file_path = os.path.join(application_path, 'survey_data.json')
-
-        def return_image_path(image_name):
-            return os.path.join(application_path, 'img', f'{image_name}')
-        image_size = (20,20)
+        
+        # Store commonly used values
+        self.image_size = (20, 20)
+        self.img_path = os.path.join(application_path, 'img')
+        
+        # Cache loaded images for better performance
+        self.images = {
+            'compass': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'compass.png')), size=self.image_size),
+            'coordinates': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'coordinates.png')), size=self.image_size),
+            'export_csv': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'export_csv.png')), size=self.image_size),
+            'generate': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'generate.png')), size=self.image_size),
+            'open_file': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'open_file.png')), size=self.image_size),
+            'speleoliti': ctk.CTkImage(Image.open(os.path.join(self.img_path, 'speleoliti.png')), size=self.image_size),
+        }
 
         # TITLE
         self.gui_title = ctk.CTkLabel(self.gui, text=f'SurveyScraper {self.version}', font=('Roboto', 18))
         self.gui_title.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
-        # self.use_offline_var = ctk.StringVar(value="off")
-        # self.use_offline = ctk.CTkSwitch(self.gui, text="Offline", font=("Roboto",14),
-        #                          variable=self.use_offline_var, onvalue="on", offvalue="off")
-        # self.use_offline.grid(row=0, column=1, padx=5, pady=5, sticky='e')
-        # self.use_offline.deselect()
-        speleoliti_img = ctk.CTkImage(Image.open(return_image_path('speleoliti.png')), size=image_size)
         self.open_speleoliti_btn = ctk.CTkButton(self.gui, text=f'Speleoliti Online', width=20, font=('Roboto', 15),
-                                                 command=self.open_speleoliti, compound='left', image=speleoliti_img)
+                                                 command=self.open_speleoliti, compound='left', image=self.images['speleoliti'])
         self.open_speleoliti_btn.grid(row=0, column=2, padx=5, pady=5, sticky='e')
         self.lang_var = ctk.StringVar(self.gui)
         self.lang_var.set(lc)
@@ -117,9 +111,8 @@ class SurveyScraper():
         #
         self.import_frm_lbl = ctk.CTkLabel(self.import_frm, text=f'{lcat["import_frm_lbl"][self.lc]}:', font=("Roboto", 14), fg_color='darkgray', corner_radius=5)
         self.import_frm_lbl.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky='ew')
-        open_file_img = ctk.CTkImage(Image.open(return_image_path('open_file.png')), size=image_size)
         self.open_file = ctk.CTkButton(self.import_frm, text=f'{lcat["open_file"][self.lc]}', 
-                                    command=self.open_file_event, compound='left', image=open_file_img)
+                                    command=self.open_file_event, compound='left', image=self.images['open_file'])
         self.open_file.grid(row=1, column=0, padx=(5,5), pady=10, columnspan=2)
 
         self.opened_file = ctk.CTkLabel(self.import_frm, text='', width=200, height=25, fg_color='white', corner_radius=5)
@@ -135,9 +128,8 @@ class SurveyScraper():
         self.show_md_value_lbl.grid(row=4, column=0, padx=5, pady=5, sticky='e')
         self.show_md_value = ctk.CTkEntry(self.import_frm, width=50, height=25, fg_color='white', corner_radius=5)
         self.show_md_value.grid(row=4, column=1, padx=5, pady=5, sticky='w')
-        generate_img = ctk.CTkImage(Image.open(return_image_path('generate.png')), size=image_size)
         self.apply_fix_md_btn = ctk.CTkButton(self.import_frm, text=f'{lcat["apply_fix_md_btn"][self.lc]}', command=self.save_json,
-                                              compound='left', image=generate_img)
+                                              compound='left', image=self.images['generate'])
         self.apply_fix_md_btn.grid(row=5, column=0, padx=(5,5), pady=5, columnspan=2)
         self.apply_fix_md_btn.configure(state='disabled')
 
@@ -147,14 +139,8 @@ class SurveyScraper():
         #
         self.export_frm_lbl = ctk.CTkLabel(self.export_frm, text=f'{lcat["export_frm_lbl"][self.lc]}:', font=("Roboto",14), fg_color='darkgray', corner_radius=5)
         self.export_frm_lbl.pack(padx=5, pady=5, fill='both')
-        # self.save_json_file = ctk.CTkButton(self.export_frm, text='Pohrani', command=self.save_json,
-        #                                 compound='left', image=self.parse_img)
-        #self.save_json_file.grid(row=1, column=0, padx=5, pady=5, sticky='ew')
-        # self.save_json_file.pack(padx=5, pady=5)
-        # self.save_json_file.configure(state='disabled')
-        export_csv_image = ctk.CTkImage(Image.open(return_image_path('export_csv.png')), size=image_size)
         self.save_csv_file = ctk.CTkButton(self.export_frm, text=f'{lcat["save_csv_file"][self.lc]}', command=self.store_to_csv,
-                                        compound='left', image=export_csv_image)
+                                        compound='left', image=self.images['export_csv'])
         self.save_csv_file.pack(padx=5, pady=5)
         self.save_csv_file.configure(state='disabled')
         self.export_original_angle_var = ctk.StringVar(value="on")
@@ -169,14 +155,7 @@ class SurveyScraper():
         self.keep_splays.pack(padx=5, pady=5)
         self.keep_splays.deselect()
         self.keep_splays.configure(state='disabled')
-        # self.open_gen_file = ctk.CTkButton(self.export_frm, text=f'{lcat["open_gen_file"][self.lc]}', 
-        #                                 #command=lambda: os.system('"%s"' % write_csv_file_path),
-        #                                 command=open_subprocess,
-        #                                 compound='left', image=self.open_file_img)
-        # self.open_gen_file.grid(row=5, column=0, padx=5, pady=5)
-        # self.open_gen_file.configure(state='disabled')
         self.success_run = ctk.CTkLabel(self.export_frm, text='', height=25, width=200, fg_color='white', corner_radius=5)
-        #self.success_run.grid(row=3, column=0, padx=5, pady=5, sticky='ew')
         self.success_run.pack(padx=5, pady=5, fill='both')
         self.success_run.configure(state='disabled')
 
@@ -213,11 +192,6 @@ class SurveyScraper():
         self.file_name_lbl.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
         self.file_name_fld = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width+30, height=25)
         self.file_name_fld.grid(row=5, column=0, columnspan=2, padx=5, pady=5, sticky='ew')
-        # Description
-        # self.description_lbl = ctk.CTkLabel(self.cave_data_frame, text='Opis: ')
-        # self.description_lbl.grid(row=5, column=0, padx=5, pady=5, sticky='e')
-        # self.description = ctk.CTkEntry(self.cave_data_frame, width=mtf_entry_width, height=25, fg_color='white', corner_radius=5)
-        # self.description.grid(row=5, column=1, padx=5, pady=5, sticky='w')
 
         # Fixed point
         self.fixed_station_lbl = ctk.CTkLabel(self.cave_data_frame, text=f'{lcat["fixed_station_lbl"][self.lc]}: ')
@@ -260,10 +234,9 @@ class SurveyScraper():
         self.location_label.grid(row=1, column=0, padx=10, pady=(5,0), sticky='e')
         self.location_input = ctk.CTkEntry(self.location_frame, width=150, height=20, font=('Roboto', 12))
         self.location_input.grid(row=1, column=1, padx=10, pady=(5,0))
-        coordinates_image = ctk.CTkImage(Image.open(return_image_path('coordinates.png')), size=image_size)
         self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text=f'{lcat["get_coord_btn_label"][self.lc]}',
                                         command=lambda: self.get_location(self.location_input.get()),
-                                        compound='left', image=coordinates_image)
+                                        compound='left', image=self.images['coordinates'])
         self.get_coord_btn.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
         Hovertip(self.location_input,f'{lcat["hovertip"][self.lc]}', hover_delay=500)
         self.lat_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lat_label"][self.lc]}: ', font=('Roboto', 12))
@@ -338,10 +311,9 @@ class SurveyScraper():
         self.decl_frame.grid(row=2, column=1, padx=(0,5), pady=5, sticky='nsew')
         self.decl_frame.columnconfigure((0,1), weight=1)
 
-        calc_md_img = ctk.CTkImage(Image.open(return_image_path('compass.png')), size=image_size)
         self.calc_md_btn = ctk.CTkButton(self.decl_frame, width=125, text=f'{lcat["calc_md_btn"][self.lc]}',
                                         command=lambda: self.get_md(self.model.get(),self.year_combo.get(),self.month_combo.get(),self.day_combo.get()),
-                                        compound='left', image=calc_md_img)
+                                        compound='left', image=self.images['compass'])
         self.calc_md_btn.grid(row=0, column=0, columnspan=3, padx=5, pady=10)
         self.md_value_lbl = ctk.CTkLabel(self.decl_frame, text=f'{lcat["md_value_lbl"][self.lc]}:')
         self.md_value_lbl.grid(row=1, column=0, padx=5, pady=5, sticky='e')
@@ -360,9 +332,7 @@ class SurveyScraper():
         readme_text.pack(padx=5, pady=5, expand=True, fill="both")
         try:
             with open(readme_file_path,'r', encoding='utf-8') as readme_file:
-                text = readme_file.read()
-            #processed_text = text.replace('\n', ' ')    
-            readme_text.insert('0.0', text)
+                readme_text.insert('0.0', readme_file.read())
         except IOError as error:
             readme_text.insert('0.0',f'{lcat["readme_text"][self.lc]}\n{error}')
         readme_text.configure(state='disabled')
@@ -474,7 +444,6 @@ class SurveyScraper():
         elif self.file_path.endswith('.srv'):
             self.software = 'Qave'
         else:
-            #messagebox.showerror('Error',f'{lcat["file_path_error"][self.lc]}')
             self.file_path = None
         # Continue with reading and processing the file
         if self.file_path:
@@ -558,7 +527,12 @@ class SurveyScraper():
             self.export_original_angle.configure(state='normal') # enable option for storing original angles if md is set
         for original_shot, shot in zip(self.original_shots, self.cave_survey_json_data['viz'][1:]):
             shot['t1'] = f"{new_shot_prefix}{original_shot['t1']}"
-            shot['t2'] = f"{new_shot_prefix}{original_shot['t2']}"
+            # Handle asterisk prefix for splays - keep it at the beginning
+            if original_shot['t2'].startswith('*'):
+                # Move asterisk to the beginning: "*az_1" instead of "az_*1"
+                shot['t2'] = f"*{new_shot_prefix}{original_shot['t2'][1:]}"
+            else:
+                shot['t2'] = f"{new_shot_prefix}{original_shot['t2']}"
             shot['a'] = round((float(original_shot['a']) + self.md_val) % 360,2)
             shot['l'] = round(float(shot['l']),3)
             shot['f'] = round(float(shot['f']),2)
@@ -646,10 +620,7 @@ class SurveyScraper():
         
     # SPELEOLITI CALCULATION FUNCTION
     def run_speleoliti_calculation(self):
-        print("run_speleoliti_calculation started")  # Debug
-        #try:
         self.speleoliti_app_headless = Speleoliti_online(headless=True, survey_path=self.survey_data_file_path)
-        print(f"Speleoliti online status: {self.speleoliti_app_headless.online}")  # Debug
         if self.speleoliti_app_headless.online:
             # refresh toplevel window GUI
             opening_speleoliti_label = ctk.CTkLabel(self.loading_window, text="Povezujem se sa Speleoliti online...")
@@ -661,8 +632,6 @@ class SurveyScraper():
             self.speleoliti_app_headless.update_fixed_station(self.fixed_station)
             self.poly_length, self.hor_length, self.elevation, self.depth = self.speleoliti_app_headless.retrieve_cave_data()
             self.speleoliti_app_headless.close_driver()
-            # except Exception as e:
-            #     messagebox.showerror('Error', f'Pogreška prilikom obrade u Speleolitima!\n\n{e}')
             self.cave_survey_json_data['fix'] = self.fixed_station # set fixed station by default
             self.cave_survey_json_data['name'] = self.cave_name
         else:
@@ -679,7 +648,6 @@ class SurveyScraper():
         self.loading_window.title('SurveyScraper')
         self.loading_window.attributes('-topmost', True)
         self.gui.eval(f'tk::PlaceWindow {str(self.loading_window)} center')
-        #self.loading_window.eval('tk::PlaceWindow . center')
         loading_label = ctk.CTkLabel(self.loading_window, text="Obrađujem, molim pričekaj...")
         loading_label.pack(padx=50, pady=(25,25), expand=True, fill="x")
         self.gui.update()
@@ -693,18 +661,14 @@ class SurveyScraper():
         
         if not parsed:
             self.loading_window.destroy()
-            print("Parsing failed, returning early")  # Debug
             return
             
         if parsed:
-            print("Parsing successful, starting Speleoliti calculation")  # Debug
             try:
                 threading.Thread(target=self.run_speleoliti_calculation()).start()
                 winsound.MessageBeep()
                 self.success_run.configure(text='Uspješan uvoz i obrada!')
             except Exception as e:
-                print(f"Speleoliti calculation error: {str(e)}")  # Debug
-                import traceback
                 traceback.print_exc()
                 parsed = False
                 self.success_run.configure(text='Neuspješan uvoz i obrada!')
@@ -764,18 +728,13 @@ class SurveyScraper():
         return parsed
 
     def parse_topodroid(self):
-        print("parse_topodroid called")  # Debug
         try:
-            print(f"Opening file: {self.file_path}")  # Debug
             with open(self.file_path,'r', encoding='utf-8') as file:
                 date = next(file).split(',')[0][2:12]
-                print(f"Date line: {date}")  # Debug
                 self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
                 self.cave_name = next(file).split(',')[0][2:]
-                print(f"Cave name: {self.cave_name}")  # Debug
                 next(file)
                 next(file)
-                shot_count = 0
                 for row in file:
                     shot = row.strip().split(',')         
                     if len(shot) >= 5 and shot[1] != '-': #main shots
@@ -796,7 +755,6 @@ class SurveyScraper():
                                     "is_splay": False
                                 }
                         self.cave_survey_json_data["viz"].append(main_shot)
-                        shot_count += 1
                     elif len(shot) >= 5 and shot[1] == '-': # splays - always parse them
                         shot_from = shot[0][0:shot[0].find('@')]
                         shot_to = '*' + shot_from  # Append asterisk as prefix for splay recognition in Speleoliti
@@ -815,24 +773,18 @@ class SurveyScraper():
                                     "is_splay": True
                                 }
                         self.cave_survey_json_data["viz"].append(splay_shot)
-                        shot_count += 1
-                print(f"Total shots parsed: {shot_count}")  # Debug
-            
+                
             # Save to JSON - filter out splays for Speleoliti processing
             # Speleoliti can't handle splays properly, so we only send main shots
             data_for_speleoliti = self.cave_survey_json_data.copy()
             data_for_speleoliti["viz"] = ["null"] + [shot for shot in self.cave_survey_json_data["viz"][1:] if not shot.get('is_splay', False)]
             
             with open(write_json_file_path, 'w') as file:
-                json.dump(data_for_speleoliti, file, indent=4) 
-            print("Parsing successful, returning True")  # Debug
-            parsed = True
-            return parsed
+                json.dump(data_for_speleoliti, file, indent=4)
+            return True
         except Exception as e:
-            print(f"TopoDroid parsing error: {str(e)}")  # Print to console for debugging
-            import traceback
-            traceback.print_exc()  # Print full traceback
-            messagebox.showerror('TopoDroid Parsing Error', f'Error details:\n\n{str(e)}')
+            traceback.print_exc()
+            messagebox.showerror('TopoDroid Parsing Error', f'Error details:\\n\\n{str(e)}')
             return False
     
     def parse_qave(self):

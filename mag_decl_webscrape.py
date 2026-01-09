@@ -1,5 +1,3 @@
-import ast
-import json
 import requests
 
 class Retrieve_lat_lon():
