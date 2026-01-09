@@ -328,14 +328,14 @@ class SurveyScraper():
 
         # find the readme file against dynamic app location
         readme_file_path = os.path.join(application_path, f'{lcat["readme_file_path"][self.lc]}') 
-        readme_text = ctk.CTkTextbox(self.help_tab_frame, height=425, wrap='word')
-        readme_text.pack(padx=5, pady=5, expand=True, fill="both")
+        self.readme_text = ctk.CTkTextbox(self.help_tab_frame, height=425, wrap='word')
+        self.readme_text.pack(padx=5, pady=5, expand=True, fill="both")
         try:
             with open(readme_file_path,'r', encoding='utf-8') as readme_file:
-                readme_text.insert('0.0', readme_file.read())
+                self.readme_text.insert('0.0', readme_file.read())
         except IOError as error:
-            readme_text.insert('0.0',f'{lcat["readme_text"][self.lc]}\n{error}')
-        readme_text.configure(state='disabled')
+            self.readme_text.insert('0.0',f'{lcat["readme_text"][self.lc]}\n{error}')
+        self.readme_text.configure(state='disabled')
 
         #   RUN GUI
         self.gui.mainloop()
@@ -421,6 +421,17 @@ class SurveyScraper():
         self.date_year.configure(text=f'{lcat["date_year"][self.lc]}:')
         self.calc_md_btn.configure(text=f'{lcat["calc_md_btn"][self.lc]}')
         self.md_value_lbl.configure(text=f'{lcat["md_value_lbl"][self.lc]}:')
+        
+        # Help tab - update README content
+        readme_file_path = os.path.join(application_path, f'{lcat["readme_file_path"][self.lc]}')
+        self.readme_text.configure(state='normal')
+        self.readme_text.delete('0.0', 'end')
+        try:
+            with open(readme_file_path,'r', encoding='utf-8') as readme_file:
+                self.readme_text.insert('0.0', readme_file.read())
+        except IOError as error:
+            self.readme_text.insert('0.0',f'{lcat["readme_text"][self.lc]}\n{error}')
+        self.readme_text.configure(state='disabled')
 
     #   CAVE SURVEY FILE IMPORT
     def open_file_event(self):

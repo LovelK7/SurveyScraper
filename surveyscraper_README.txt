@@ -1,6 +1,6 @@
 ************************************************************************************
 
-		    SurveyScraper - Verzija 3.1 (ožujak 2024.)
+		    SurveyScraper - Verzija 3.2 (siječanj 2026.)
 
 ************************************************************************************
 ************************     ŠTO JE SURVEYSCRAPER?      ****************************
@@ -14,13 +14,15 @@ SurveyScraper je program koji pojednostavljuje obradu podataka mjernih vlakova d
 -- Korekcija azimuta vlakova prema unesenoj ili izračunatoj magnetskoj deklinaciji.
 -- Računanje magnetske deklinacije za odabranu lokaciju, model i datum.
 -- Pohrana podataka i tablice mjernih vlakova u csv datoteku.
+-- Uključivanje/isključivanje izvoza pomoćnih vlakova (splays) u izlaznoj csv datoteci (TopoDroid).
 -- Mogućnost dodatnih funkcionalnosti otvaranjem Speleoliti Online
+-- Podrška za višejezično sučelje (Hrvatski/Engleski).
 
 *************************      OPIS SUČELJA        *********************************
 
 Program se sastoji od POČETNE TRAKE:
 -- Speleoliti Online: otvaranje preglednika Google Chrome-a i stranice 		Speleoliti Online (https://www.speleo.net/speleoliti/online/app.html),
--- HR: odabir jezika (trenutno je dostupan jedino hrvatski jezik),
+-- HR/EN: odabir jezika (hrvatski ili engleski),
 te TRI TABA:
 -- Main: obrada mjernih vlakova,
 -- MagDec: izračun magnetske deklinacije,
@@ -40,6 +42,9 @@ te TRI TABA:
 	mm-1.0	mm-1.1
 	mm-1.1	mm-1.2
 	...
+-- NAPOMENA: Za TopoDroid pomoćni vlakovi (splays) označeni su zvjezdicom (*) koja će uvijek ostati na prvom mjestu. Npr. prefiks "az_" će proizvesti:
+	Glavna vlakovi: az_0, az_1, az_2...
+	Pomoćni vlakovi: *az_0, *az_1, *az_2...
 
 3. Unesi magnetsku deklinaciju u decimalnim stupnjevima ili ju izračunaj automatski (opcionalno)
 -- 3.1 Za izračun magnetske deklinacije pritisni tab MagDec
@@ -61,6 +66,7 @@ te TRI TABA:
 6. IZVOZ
 -- Pritiskom na "Izvezi u CSV" otvara se prozor za odabir mjesta za pohranu 		csv datoteke. Izlazna datoteka se sastoji od redova s podacima o objektu te 		tablice glavnih mjernih vlakova.
 -- Opcija "Dodaj stupac izvornih azimuta" - Ukoliko je definirana magnetska 		deklinacija, moguće je aktivirati opciju izvoza stupca i originalnih azimuta.
+-- Opcija "Uključi bočne vlakove" (TopoDroid) - Omogućuje izvoz CSV datoteke 		koja uključuje i bočna vlakva (splays) uz glavna. Standardno je 			isključeno jer Speleoliti obrada ne podržava bočna vlakva.
 
 *******************************     KONTAKT	 ***********************************
 
