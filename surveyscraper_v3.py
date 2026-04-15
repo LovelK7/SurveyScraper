@@ -54,7 +54,7 @@ class SurveyScraper():
         self.cave_survey_opened = False
         self.original_angles = []
         self.offline = False
-        self.version = 'v3.2'
+        self.version = 'v3.2.1'
 
         if lc == 'HR':
             self.lc = 0
