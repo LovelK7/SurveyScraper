@@ -741,11 +741,25 @@ class SurveyScraper():
     def parse_topodroid(self):
         try:
             with open(self.file_path,'r', encoding='utf-8') as file:
-                date = next(file).split(',')[0][2:12]
-                self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
-                self.cave_name = next(file).split(',')[0][2:]
-                next(file)
-                next(file)
+                line1 = next(file)
+                line2 = next(file)
+                if '# name:' in line2:
+                    # New format (TopoDroid v6.4+): name on line 2, date on line 3, 4 more header lines
+                    self.cave_name = line2.split('# name:')[1].strip()
+                    line3 = next(file)
+                    date = line3.split('# date:')[1].strip()
+                    self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
+                    next(file)  # team
+                    next(file)  # declination
+                    next(file)  # units
+                    next(file)  # column headers
+                else:
+                    # Old format: date at chars 2-12 of line 1, cave name after '# ' on line 2
+                    date = line1.split(',')[0][2:12]
+                    self.survey_date = datetime.datetime.strptime(date, "%Y.%m.%d")
+                    self.cave_name = line2.split(',')[0][2:].strip()
+                    next(file)
+                    next(file)
                 for row in file:
                     shot = row.strip().split(',')         
                     if len(shot) >= 5 and shot[1] != '-': #main shots
