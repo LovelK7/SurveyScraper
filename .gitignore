@@ -1,2 +1,22 @@
 survey_data.json
 test_files
+
+# Python build / venv / caches
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# Tooling
+.ruff_cache/
+.pytest_cache/
+
+# Runtime artifacts
+surveyscraper.log
+surveyscraper.log.*
+
+testing/

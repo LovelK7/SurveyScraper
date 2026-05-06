@@ -11,3 +11,19 @@ Currently, most commonly used digital cave survey apps (TopoDroid, Qave and Pock
 
 Go to the releases section and download the whole zip file. Once unpacked, it is ready to run without installing!
 Note: Windows Defender might recognize exe file as a virus. I assure you it is not! :)
+
+# For developers
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — package layout, data flow, deferred work, known fragilities.
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — dev environment, how to add a parser / translation / GUI feature, PR checklist.
+- [docs/BUILD.md](docs/BUILD.md) — build the exe locally or via the GitHub Actions release workflow.
+
+Quick start:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e .[dev]
+pytest
+python -m surveyscraper
+```

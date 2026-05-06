@@ -1,0 +1,13 @@
+line-length = 110
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = [
+    "E501",   # long lines tolerated in UI construction
+    "B008",   # default-arg widget construction is idiomatic in tkinter code
+]
+
+[lint.per-file-ignores]
+"surveyscraper/ui/**" = ["E501"]
+"tests/**" = ["E501"]

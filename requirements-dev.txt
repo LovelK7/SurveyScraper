@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest>=7
+pytest-mock>=3.10
+responses>=0.23
+ruff>=0.4
+pyinstaller>=6

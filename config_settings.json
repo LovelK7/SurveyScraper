@@ -1,6 +1,7 @@
 {
     "language_setting": "HR",
     "last_used_software": "TopoDroid",
+    "noaa_api_key": "zNEw7",
     "software_lbl": [
         "Odaberi program: ",
         "Choose software: "
@@ -10,11 +11,11 @@
         "Open survey file"
     ],
     "survey_sign_lbl": [
-        "Predznak to\u010daka: ",
+        "Predznak točaka: ",
         "Shot prefix: "
     ],
     "calc_magn_decl_btn": [
-        "Ura\u010dunaj deklinaciju",
+        "Uračunaj deklinaciju",
         "Calculate declination"
     ],
     "parse_file": [
@@ -26,7 +27,7 @@
         "surveyscraper_README_EN.txt"
     ],
     "readme_text": [
-        "Pogre\u0161ka prilikom u\u010ditanja readme datoteke!",
+        "Pogreška prilikom učitanja readme datoteke!",
         "Error while reading readme file!"
     ],
     "file_path": [
@@ -38,15 +39,15 @@
         "Incorrect file was opened!"
     ],
     "success_run_true": [
-        "Uspje\u0161na konverzija!",
+        "Uspješna konverzija!",
         "Successful conversion!"
     ],
     "success_run_false": [
-        "Pogre\u0161ka!",
+        "Pogreška!",
         "Failed conversion!"
     ],
     "sign_warning": [
-        "Bez predznaka Excel \u0107e prepoznati to\u010dke kao brojeve i maknuti nule!",
+        "Bez predznaka Excel će prepoznati točke kao brojeve i maknuti nule!",
         "Without prefix Excel will read shots as numbers!"
     ],
     "empty_write_path": [
@@ -66,7 +67,7 @@
         "From,To,Length,Direction,Inclination"
     ],
     "IOError": [
-        "Nije mogu\u0107e kreirati csv datoteku! Molim zatvori datoteku!",
+        "Nije moguće kreirati csv datoteku! Molim zatvori datoteku!",
         "Unable to write to a csv file! Please close the file!"
     ],
     "location_error": [
@@ -78,7 +79,7 @@
         "Location"
     ],
     "location_label": [
-        "Upi\u0161i lokaciju",
+        "Upiši lokaciju",
         "Enter location"
     ],
     "get_coord_btn_label": [
@@ -86,15 +87,15 @@
         "Lookup coordinates"
     ],
     "hovertip": [
-        "Mo\u017ee\u0161 upisati i adresu (npr. ulica i mjesto odvojeni zarezom)",
+        "Možeš upisati i adresu (npr. ulica i mjesto odvojeni zarezom)",
         "You can enter full address (e.g. street and city separated by comma)"
     ],
     "lat_label": [
-        "Geografska \u0161irina",
+        "Geografska širina",
         "Latitude"
     ],
     "lon_label": [
-        "Geografska du\u017eina",
+        "Geografska dužina",
         "Longitude"
     ],
     "map.set_position_x": [
@@ -134,11 +135,11 @@
         "Location is not defined!"
     ],
     "lat_lon_input_error_manual": [
-        "Pogre\u0161ka prilikom \u010ditanja podataka. Molim provjeri koordinate!",
+        "Pogreška prilikom čitanja podataka. Molim provjeri koordinate!",
         "Error while reading data. Please check coordinates!"
     ],
     "calc_md_btn": [
-        "Izra\u010dunaj",
+        "Izračunaj",
         "Calculate"
     ],
     "md_value_lbl": [
@@ -146,7 +147,7 @@
         "Magn. declination"
     ],
     "include_md_btn": [
-        "Ura\u010dunaj",
+        "Uračunaj",
         "Apply"
     ],
     "open_gen_file": [
@@ -178,7 +179,7 @@
         "Add original azimuth column"
     ],
     "keep_splays": [
-        "Uklju\u010di pomo\u0107ne vlakove",
+        "Uključi pomoćne vlakove",
         "Include splays"
     ],
     "cave_name_lbl": [
@@ -202,7 +203,7 @@
         "File name to save"
     ],
     "fixed_station_lbl": [
-        "Fiksna to\u010dka",
+        "Fiksna točka",
         "Fixed station"
     ],
     "poly_length_lbl": [
@@ -218,7 +219,7 @@
         "Elevation difference"
     ],
     "depth_lbl": [
-        "Dubina od fiksne to\u010dke",
+        "Dubina od fiksne točke",
         "Depth from fixed station"
     ]
 }
