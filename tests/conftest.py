@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-TESTING_DIR = REPO_ROOT / "testing"
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 
 # Make sure the package is importable when running `pytest` from any cwd.
@@ -23,17 +23,17 @@ def repo_root() -> Path:
 
 @pytest.fixture(scope="session")
 def topodroid_v6_csv() -> Path:
-    return TESTING_DIR / "jama_Edison_2.csv"
+    return FIXTURES_DIR / "jama_Edison_2.csv"
 
 
 @pytest.fixture(scope="session")
 def topodroid_old_csv() -> Path:
-    return TESTING_DIR / "krkuž_uskrs.csv"
+    return FIXTURES_DIR / "krkuž_uskrs.csv"
 
 
 @pytest.fixture(scope="session")
 def pockettopo_txt() -> Path:
-    return TESTING_DIR / "geyrovo.txt"
+    return FIXTURES_DIR / "geyrovo.txt"
 
 
 def load_golden(name: str) -> dict:

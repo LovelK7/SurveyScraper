@@ -8,7 +8,7 @@ do not write to disk and do not show UI; failures raise `ParseError`.
 Add a new parser by:
   1. Subclassing `BaseParser` in a new module (e.g. `parsers/wallsxml.py`).
   2. Registering it in `PARSERS` below.
-  3. Adding a sample file to `testing/` and a golden snapshot to `tests/golden/`.
+  3. Adding a sample file to `tests/fixtures/` and a golden snapshot to `tests/golden/`.
 """
 from __future__ import annotations
 

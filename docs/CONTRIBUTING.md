@@ -76,10 +76,11 @@ ruff format --check .   # see ruff.toml for config
 3. Wire the file-extension dispatch in
    [`surveyscraper_v3.py:open_file_event`](../surveyscraper_v3.py)
    (the `endswith('.csv') / .txt / .srv` ladder).
-4. Drop a sample file in `testing/`.
+4. Drop a sample file in `tests/fixtures/` (tracked in git so CI can see it).
+   `testing/` is gitignored — use it for local scratch files only.
 5. Generate a golden snapshot:
    ```powershell
-   python -X utf8 -c "import json; from surveyscraper.parsers import parse_file; r = parse_file('Therion', 'testing/example.th'); json.dump({'survey': r.survey, 'cave_name': r.cave_name, 'survey_date': r.survey_date.isoformat() if r.survey_date else None, 'has_splays': r.has_splays}, open('tests/golden/therion_example.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)"
+   python -X utf8 -c "import json; from surveyscraper.parsers import parse_file; r = parse_file('Therion', 'tests/fixtures/example.th'); json.dump({'survey': r.survey, 'cave_name': r.cave_name, 'survey_date': r.survey_date.isoformat() if r.survey_date else None, 'has_splays': r.has_splays}, open('tests/golden/therion_example.json', 'w', encoding='utf-8'), indent=2, ensure_ascii=False)"
    ```
 6. Add a test in `tests/test_parsers.py` that loads the golden and asserts
    the parser produces it.

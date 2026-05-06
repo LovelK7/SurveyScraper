@@ -22,6 +22,7 @@ from surveyscraper.services import config_store as _config_store
 from surveyscraper.services import exporter as _exporter
 from surveyscraper.services import magdec as _magdec
 from surveyscraper.services.speleoliti import SpeleolitiOnline as _SpeleolitiOnline
+from surveyscraper.__init__ import __version__ as _version
 
 ctk.set_appearance_mode('light')
 ctk.set_default_color_theme('green')
@@ -61,7 +62,7 @@ class SurveyScraper():
         self.cave_survey_opened = False
         self.original_angles = []
         self.offline = False
-        self.version = 'v4.0.0'
+        self.version = 'v'+_version
 
         if lc == 'HR':
             self.lc = 0

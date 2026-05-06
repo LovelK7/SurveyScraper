@@ -39,8 +39,10 @@ SurveyScraper/
   surveyscraper_README.txt        # Bundled help (HR)
   surveyscraper_README_EN.txt     # Bundled help (EN)
   img/                            # Icons, .ico
-  testing/                        # Sample input files (also test fixtures)
+  testing/                        # Local-only scratch files (gitignored)
   tests/                          # pytest suite
+    fixtures/                     # Tracked sample files used by the parser tests
+    golden/                       # JSON snapshots compared against parser output
   build.spec                      # PyInstaller spec
   build.py                        # build + zip wrapper
   .github/workflows/release.yml   # CI: build + release on tag push
