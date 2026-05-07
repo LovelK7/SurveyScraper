@@ -278,16 +278,22 @@ class SurveyScraper():
         current_month = current_date.strftime('%m')
         current_year = current_date.strftime('%Y')
         def refresh_year():
-            if self.model.get() == 'WMM':
-                year_range = [str(y) for y in range(2019,int(current_year)+2)]
-            elif self.model.get() == 'IGRF':
-                year_range = [str(y) for y in range(1590,int(current_year)+2)]
-            self.year_combo.configure(values=sorted(year_range, reverse=True))
+            years = _magdec.years_for_model(self.model.get())
+            if not years:
+                return
+            self.year_combo.configure(values=sorted([str(y) for y in years], reverse=True))
+            # If the currently displayed year is now out of range, snap to the most recent valid year
+            try:
+                current = int(self.selected_year.get())
+            except ValueError:
+                current = 0
+            if current not in years:
+                self.selected_year.set(str(years[-1]))
 
-        self.model_wmm = ctk.CTkRadioButton(self.model_frame, text='WMM (2019-2024)', value='WMM', variable=self.model, command=refresh_year)
+        self.model_wmm = ctk.CTkRadioButton(self.model_frame, text=_magdec.model_label('WMM'), value='WMM', variable=self.model, command=refresh_year)
         self.model_wmm.grid(row=1, column=0, padx=30, pady=5, sticky='w')
         self.model_wmm.select()
-        self.model_igrf = ctk.CTkRadioButton(self.model_frame, text='IGRF (1590-2024)', value='IGRF', variable=self.model, command=refresh_year)
+        self.model_igrf = ctk.CTkRadioButton(self.model_frame, text=_magdec.model_label('IGRF'), value='IGRF', variable=self.model, command=refresh_year)
         self.model_igrf.grid(row=2, column=0, padx=30, pady=5, sticky='w')
 
         #   DATE SUBFRAME
@@ -309,8 +315,12 @@ class SurveyScraper():
         self.month_combo.grid(row=2, column=1, padx=5, pady=5, sticky='w')
         self.date_year = ctk.CTkLabel(self.date_frame, text=f'{lcat["date_year"][self.lc]}:')
         self.date_year.grid(row=3, column=0, padx=10, pady=5, sticky='e')
-        self.selected_year = ctk.StringVar(value=current_year)
-        year_range = [str(y) for y in range(2019,int(current_year)+2)]
+        # Default to today's year if the WMM range covers it, otherwise the most
+        # recent WMM year (the radio default is WMM).
+        wmm_years = _magdec.years_for_model('WMM')
+        default_year = current_year if int(current_year) in wmm_years else str(wmm_years[-1])
+        self.selected_year = ctk.StringVar(value=default_year)
+        year_range = [str(y) for y in wmm_years]
         self.year_combo = ctk.CTkComboBox(self.date_frame, width=60, height=20, values=sorted(year_range, reverse=True), variable=self.selected_year)
         self.year_combo.grid(row=3, column=1, padx=5, pady=5, sticky='w')
 
@@ -499,6 +509,16 @@ class SurveyScraper():
                     self.selected_day.set(str(self.survey_date.day))
                     self.selected_month.set(str(self.survey_date.month))
                     self.selected_year.set(str(self.survey_date.year))
+                    # If the survey year is outside WMM's current range, switch to
+                    # IGRF (which covers a wider window) so the user doesn't have
+                    # to do it manually before clicking Calculate.
+                    if not _magdec.is_year_valid(self.model.get(), self.survey_date.year):
+                        if _magdec.is_year_valid('IGRF', self.survey_date.year):
+                            self.model.set('IGRF')
+                            self.model_igrf.select()
+                            self.year_combo.configure(
+                                values=sorted([str(y) for y in _magdec.years_for_model('IGRF')], reverse=True)
+                            )
                 self.opened_file.configure(text=file_base_name)
                 self.apply_fix_md_btn.configure(state='normal')
                 self.save_csv_file.configure(state='normal')
@@ -712,6 +732,16 @@ class SurveyScraper():
             return
         if self.lat_input.get() == '' or self.lon_input.get() == '':
             messagebox.showerror('Error', f'{lcat["lat_lon_input_error"][self.lc]}')
+            return
+        if not _magdec.is_year_valid(model, int(year)):
+            lo, hi = _magdec.MODEL_YEAR_RANGES.get(model, (0, 0))
+            messagebox.showerror(
+                'Error',
+                f'Godina {year} izvan raspona za model {model} ({lo}–{hi}).\n'
+                f'Year {year} out of range for {model} ({lo}–{hi}).\n\n'
+                f'IGRF: {_magdec.MODEL_YEAR_RANGES["IGRF"][0]}–{_magdec.MODEL_YEAR_RANGES["IGRF"][1]}\n'
+                f'WMM: {_magdec.MODEL_YEAR_RANGES["WMM"][0]}–{_magdec.MODEL_YEAR_RANGES["WMM"][1]}'
+            )
             return
         try:
             decl = _magdec.magnetic_declination(

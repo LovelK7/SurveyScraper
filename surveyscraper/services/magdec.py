@@ -31,7 +31,39 @@ DEFAULT_TIMEOUT = 20
 RETRY_ATTEMPTS = 2          # initial + one retry
 RETRY_BACKOFF_SECONDS = 1.5
 
+# NOAA-accepted year ranges per model (probed 2026-05). WMM is a 5-year model;
+# its current epoch is WMM2025 covering 2025-2029. IGRF is updated every five
+# years and currently covers 1900-2029. Bump these when NOAA releases the next
+# epoch (the GUI labels are derived from these constants).
+MODEL_YEAR_RANGES: dict[str, tuple[int, int]] = {
+    "WMM": (2025, 2029),
+    "IGRF": (1900, 2029),
+}
+
 _log = get_logger("magdec")
+
+
+def years_for_model(model: str) -> list[int]:
+    """Return the inclusive list of years NOAA currently accepts for `model`."""
+    if model not in MODEL_YEAR_RANGES:
+        return []
+    lo, hi = MODEL_YEAR_RANGES[model]
+    return list(range(lo, hi + 1))
+
+
+def is_year_valid(model: str, year: int) -> bool:
+    if model not in MODEL_YEAR_RANGES:
+        return False
+    lo, hi = MODEL_YEAR_RANGES[model]
+    return lo <= year <= hi
+
+
+def model_label(model: str) -> str:
+    """Display label like `WMM (2025-2029)` for a radio button."""
+    if model not in MODEL_YEAR_RANGES:
+        return model
+    lo, hi = MODEL_YEAR_RANGES[model]
+    return f"{model} ({lo}-{hi})"
 
 
 def _redact(params: dict) -> dict:
