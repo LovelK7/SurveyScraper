@@ -34,27 +34,39 @@ RETRY_BACKOFF_SECONDS = 1.5
 _log = get_logger("magdec")
 
 
+def _redact(params: dict) -> dict:
+    """Return a copy of params with the API key redacted, safe to log."""
+    if "key" not in params:
+        return params
+    return {k: ("<redacted>" if k == "key" else v) for k, v in params.items()}
+
+
 def _request_json(url: str, *, params: dict, headers: dict | None = None, label: str) -> dict | list:
     """GET `url` and decode JSON, retrying once on transient failure.
 
-    Logs status code, content-type, and a body excerpt when something goes
-    sideways so future failures are diagnosable from `surveyscraper.log`.
+    Logs status code, content-type, a body excerpt, and the (redacted) request
+    params when something goes sideways so future failures are diagnosable
+    from `surveyscraper.log`.
     """
+    safe_params = _redact(params)
     last_error: Exception | None = None
     for attempt in range(RETRY_ATTEMPTS):
         try:
             response = requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
         except requests.RequestException as e:
             last_error = e
-            _log.warning("%s request failed (attempt %d/%d): %s", label, attempt + 1, RETRY_ATTEMPTS, e)
+            _log.warning(
+                "%s request failed (attempt %d/%d): %s | params=%r",
+                label, attempt + 1, RETRY_ATTEMPTS, e, safe_params,
+            )
         else:
             if response.status_code != 200:
                 last_error = NetworkError(f"{label} returned HTTP {response.status_code}")
                 _log.warning(
-                    "%s non-200 (attempt %d/%d): status=%s content-type=%s body[:200]=%r",
+                    "%s non-200 (attempt %d/%d): status=%s content-type=%s body[:500]=%r | params=%r",
                     label, attempt + 1, RETRY_ATTEMPTS,
                     response.status_code, response.headers.get("content-type"),
-                    response.text[:200],
+                    response.text[:500], safe_params,
                 )
             else:
                 try:
@@ -62,10 +74,10 @@ def _request_json(url: str, *, params: dict, headers: dict | None = None, label:
                 except ValueError as e:
                     last_error = e
                     _log.warning(
-                        "%s body was not JSON (attempt %d/%d): content-type=%s body[:200]=%r",
+                        "%s body was not JSON (attempt %d/%d): content-type=%s body[:500]=%r | params=%r",
                         label, attempt + 1, RETRY_ATTEMPTS,
                         response.headers.get("content-type"),
-                        response.text[:200],
+                        response.text[:500], safe_params,
                     )
         if attempt + 1 < RETRY_ATTEMPTS:
             time.sleep(RETRY_BACKOFF_SECONDS)
