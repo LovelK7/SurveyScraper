@@ -9,8 +9,14 @@ changes its DOM, the fragile-string surface area is here, not scattered.
 """
 from __future__ import annotations
 
-from selenium import webdriver
+# Explicit submodule imports (rather than `from selenium import webdriver` and
+# `webdriver.Chrome` / `webdriver.ChromeOptions`) so PyInstaller's static
+# analysis bundles the chrome.options / chrome.webdriver modules. Modern
+# selenium resolves those names via a lazy `__getattr__` at runtime, which the
+# bundled exe cannot see.
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -53,14 +59,14 @@ class SpeleolitiOnline:
 
     def __init__(self, *, headless: bool, survey_path: str) -> None:
         self.online = True
-        self.driver: webdriver.Chrome | None = None
+        self.driver: Chrome | None = None
         self.headless = headless
         self.survey_path = survey_path
         self.url = URL
 
         try:
             driver_path = ChromeDriverManager().install()
-            options = webdriver.ChromeOptions()
+            options = ChromeOptions()
             options.add_experimental_option("excludeSwitches", ["enable-logging"])
             options.add_argument("--log-level=0")
             options.add_argument("--disable-dev-shm-usage")
@@ -70,7 +76,7 @@ class SpeleolitiOnline:
             if headless:
                 options.add_argument("--headless=new")
             service = Service(driver_path)
-            self.driver = webdriver.Chrome(service=service, options=options)
+            self.driver = Chrome(service=service, options=options)
             if not headless:
                 self.driver.minimize_window()
                 self.handle_of_the_window = self.driver.current_window_handle

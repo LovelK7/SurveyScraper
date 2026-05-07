@@ -15,6 +15,8 @@ preserved as a fallback so existing installations keep working.
 """
 from __future__ import annotations
 
+import time
+
 import requests
 
 from surveyscraper.core.errors import NetworkError
@@ -23,11 +25,52 @@ from surveyscraper.services import config_store
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search.php"
 NOAA_DECLINATION_URL = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination"
-USER_AGENT = "SurveyScraper/3.3 (https://github.com/LovelK7/SurveyScraper)"
+USER_AGENT = "SurveyScraper/4.0 (https://github.com/LovelK7/SurveyScraper)"
 DEFAULT_NOAA_KEY = "zNEw7"  # legacy default; prefer setting `noaa_api_key` in config_settings.json
-DEFAULT_TIMEOUT = 15
+DEFAULT_TIMEOUT = 20
+RETRY_ATTEMPTS = 2          # initial + one retry
+RETRY_BACKOFF_SECONDS = 1.5
 
 _log = get_logger("magdec")
+
+
+def _request_json(url: str, *, params: dict, headers: dict | None = None, label: str) -> dict | list:
+    """GET `url` and decode JSON, retrying once on transient failure.
+
+    Logs status code, content-type, and a body excerpt when something goes
+    sideways so future failures are diagnosable from `surveyscraper.log`.
+    """
+    last_error: Exception | None = None
+    for attempt in range(RETRY_ATTEMPTS):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
+        except requests.RequestException as e:
+            last_error = e
+            _log.warning("%s request failed (attempt %d/%d): %s", label, attempt + 1, RETRY_ATTEMPTS, e)
+        else:
+            if response.status_code != 200:
+                last_error = NetworkError(f"{label} returned HTTP {response.status_code}")
+                _log.warning(
+                    "%s non-200 (attempt %d/%d): status=%s content-type=%s body[:200]=%r",
+                    label, attempt + 1, RETRY_ATTEMPTS,
+                    response.status_code, response.headers.get("content-type"),
+                    response.text[:200],
+                )
+            else:
+                try:
+                    return response.json()
+                except ValueError as e:
+                    last_error = e
+                    _log.warning(
+                        "%s body was not JSON (attempt %d/%d): content-type=%s body[:200]=%r",
+                        label, attempt + 1, RETRY_ATTEMPTS,
+                        response.headers.get("content-type"),
+                        response.text[:200],
+                    )
+        if attempt + 1 < RETRY_ATTEMPTS:
+            time.sleep(RETRY_BACKOFF_SECONDS)
+
+    raise NetworkError(f"{label} failed after {RETRY_ATTEMPTS} attempts: {last_error}")
 
 
 def _noaa_api_key() -> str:
@@ -43,24 +86,17 @@ def geocode(location: str) -> tuple[float, float]:
     if not location:
         raise NetworkError("Location string is empty")
 
-    headers = {"User-Agent": USER_AGENT}
-    params = {"q": location, "format": "jsonv2"}
+    results = _request_json(
+        NOMINATIM_URL,
+        params={"q": location, "format": "jsonv2"},
+        headers={"User-Agent": USER_AGENT},
+        label="Nominatim",
+    )
     try:
-        response = requests.get(NOMINATIM_URL, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
-    except requests.RequestException as e:
-        _log.exception("Nominatim request failed for %r", location)
-        raise NetworkError(f"Could not reach Nominatim: {e}") from e
-
-    if response.status_code != 200:
-        _log.error("Nominatim non-200: %s -- %s", response.status_code, response.text[:200])
-        raise NetworkError(f"Nominatim returned HTTP {response.status_code}")
-
-    try:
-        results = response.json()
         return float(results[0]["lat"]), float(results[0]["lon"])
-    except (ValueError, IndexError, KeyError) as e:
-        _log.exception("Nominatim response did not contain a coordinate")
-        raise NetworkError(f"Could not parse Nominatim response: {e}") from e
+    except (IndexError, KeyError, TypeError) as e:
+        _log.error("Nominatim returned no usable coordinate for %r: %r", location, results)
+        raise NetworkError(f"Nominatim returned no coordinate for {location!r}") from e
 
 
 def magnetic_declination(
@@ -75,25 +111,22 @@ def magnetic_declination(
     if latitude is None or longitude is None:
         raise NetworkError("Latitude/longitude are required to compute declination")
 
-    params = {
-        "lat1": latitude,
-        "lon1": longitude,
-        "model": model,
-        "startYear": year,
-        "startMonth": month,
-        "startDay": day,
-        "key": _noaa_api_key(),
-        "resultFormat": "json",
-    }
+    data = _request_json(
+        NOAA_DECLINATION_URL,
+        params={
+            "lat1": latitude,
+            "lon1": longitude,
+            "model": model,
+            "startYear": year,
+            "startMonth": month,
+            "startDay": day,
+            "key": _noaa_api_key(),
+            "resultFormat": "json",
+        },
+        label="NOAA",
+    )
     try:
-        response = requests.get(NOAA_DECLINATION_URL, params=params, timeout=DEFAULT_TIMEOUT)
-    except requests.RequestException as e:
-        _log.exception("NOAA request failed (lat=%s lon=%s)", latitude, longitude)
-        raise NetworkError(f"Could not reach NOAA: {e}") from e
-
-    try:
-        data = response.json()
         return float(data["result"][0]["declination"])
-    except (ValueError, KeyError, IndexError, TypeError) as e:
-        _log.exception("NOAA response did not contain a declination value")
-        raise NetworkError(f"Could not parse NOAA response: {e}") from e
+    except (KeyError, IndexError, TypeError) as e:
+        _log.error("NOAA response missing declination: %r", data)
+        raise NetworkError("NOAA response did not contain a declination value") from e

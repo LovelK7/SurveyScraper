@@ -11,6 +11,7 @@
 
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 PROJECT_ROOT = Path.cwd()
 
@@ -20,15 +21,25 @@ datas = [
     ("surveyscraper_README.txt", "."),
     ("surveyscraper_README_EN.txt", "."),
 ]
+# customtkinter and tkintermapview ship JSON theme / map-tile assets that
+# PyInstaller's static analysis doesn't pick up by default.
+datas += collect_data_files("customtkinter")
+datas += collect_data_files("tkintermapview")
 
-hiddenimports = [
-    "tkintermapview",
-    "PIL.Image",
-    "selenium",
-    "webdriver_manager.chrome",
-    # idlelib is part of the stdlib but not auto-discovered by PyInstaller
-    "idlelib.tooltip",
-]
+# Selenium 4.x resolves submodules (chrome.options, chrome.webdriver, etc.)
+# via lazy __getattr__ at runtime; collect_submodules forces them into the
+# bundle so the frozen exe doesn't ImportError on first use. Same idea for
+# webdriver_manager.
+hiddenimports = (
+    collect_submodules("selenium")
+    + collect_submodules("webdriver_manager")
+    + [
+        "tkintermapview",
+        "PIL.Image",
+        # idlelib is part of the stdlib but not auto-discovered by PyInstaller
+        "idlelib.tooltip",
+    ]
+)
 
 a = Analysis(
     ["surveyscraper_v3.py"],
