@@ -1,81 +1,96 @@
-************************************************************************************
+SURVEYSCRAPER 4.1
+User guide · November 2026
 
-		    SurveyScraper - Version 4.1 (November 2026)
 
-************************************************************************************
-************************     WHAT IS SURVEYSCRAPER?      ***************************
+ABOUT
 
-SurveyScraper is a program that simplifies the processing of survey shot data obtained from the most commonly used digital cave surveying programs: TopoDroid, Qave, and PocketTopo. The program essentially replaces MS Excel functionality for survey shot processing and uses Speleoliti Online features to calculate basic dimensions of the survey or cave object.
+SurveyScraper processes cave survey shots from TopoDroid, Qave and PocketTopo. It extracts the main shots, corrects azimuths for magnetic declination, uses Speleoliti Online to calculate the basic dimensions of the cave, and exports the shot table to a CSV file. It replaces processing survey shots by hand in Excel.
 
-*************************     FEATURES       ***************************************
 
--- Import survey shots and automatic filtering of main shots.
--- Adding prefix/sign to station names saved in the csv file.
--- Correction of shot azimuths according to entered or calculated magnetic declination.
--- Import of the TopoDroid raw-data export (one row per measurement), with repeated measurements of main shots averaged automatically.
--- Calculation of magnetic declination for selected location, model and date.
--- Coordinate input in WGS84 or HTRS96/TM (the official Croatian projected system).
--- Saving data and survey shot table to csv file.
--- Include/exclude splay shots in output csv file (TopoDroid).
--- Additional functionality by opening Speleoliti Online
--- Multi-language interface support (Croatian/English).
+SUPPORTED FILES
 
-*************************      INTERFACE DESCRIPTION        ************************
+• TopoDroid (.csv) – the usual export and the raw-data export (one row per measurement). The format is detected automatically.
+• PocketTopo (.txt)
+• Qave (.srv)
 
-The program consists of a TOP BAR:
--- Speleoliti Online: opens Google Chrome browser and Speleoliti Online page 		(https://www.speleo.net/speleoliti/online/app.html),
--- HR/EN: language selection (Croatian or English),
-and THREE TABS:
--- Main: survey shot processing,
--- MagDec: magnetic declination calculation,
--- Help: opens these instructions within the program.
+The source program is detected from the file extension.
 
-*************************     USER INSTRUCTIONS       ******************************
 
-1. IMPORT 
--- In the Main tab, open the file with shots: TopoDroid csv file, Qave srv file 	or PocketTopo txt file.
--- TopoDroid: both the usual csv export and the raw-data export (one row per measurement) are supported; the format is detected automatically. For raw data, repeated measurements of the same main shot are averaged, and deleted and overshoot measurements are left out - if a shot is missing, check whether it was deleted in TopoDroid.
+INTERFACE
 
-2. Define station prefix/sign (optional) 
--- For example, according to the survey author (John Doe - "jd-") or cave name (Doe Cave - "dc-"). Then for TopoDroid and Qave cases, stations will be named:
-	jd-0	jd-1
-	jd-1	jd-2
-	...
--- For PocketTopo:
-	jd-1.0	jd-1.1
-	jd-1.1	jd-1.2
-	...
--- NOTE: For TopoDroid, splay shots are marked with an asterisk (*) which will 	always remain in the first position. For example, prefix "az_" will produce:
-	Main shots: az_0, az_1, az_2...
-	Splay shots: *az_0, *az_1, *az_2...
+• Speleoliti Online – opens Speleoliti Online (https://www.speleo.net/speleoliti/online/app.html) in Google Chrome.
+• HR / EN – interface language.
+• Main – import, processing and export of survey shots.
+• MagDec – magnetic declination calculation.
+• Help – this guide.
 
-3. Enter magnetic declination in decimal degrees or calculate it automatically (optional)
--- 3.1 To calculate magnetic declination, click the MagDec tab
--- 3.2 Enter the cave object location (e.g., nearest place or city, town, street)
--- 3.3 Get coordinates. The search will locate the entered place and enter 		coordinates in the next two fields (latitude and longitude). The found location 	will be displayed on a small map.
--- 3.4 Coordinates can also be entered manually. In the "Coordinate system" menu choose:
-	WGS84 - latitude and longitude in decimal degrees (e.g. 45.8150 and 15.9819),
-	HTRS96/TM - Northing (N) and Easting (E) in metres (e.g. N 5075146 and E 459737).
-   A decimal comma and spaces are accepted. Switching the system converts coordinates already entered. HTRS96/TM coordinates are converted to WGS84 before the calculation (offline). If N and E are swapped or entered in degrees, the program shows an error.
--- 3.5 Select the desired model for magnetic declination calculation (default: WMM)
--- 3.6 Select the date - day, month and year of survey (default: today's date)
--- 3.7 Calculate. If everything is entered correctly, magnetic declination will be 	retrieved to three decimal places from the Magnetic Field Calculators portal 		(NOAA, https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml). After 		calculation, the magnetic declination will be automatically entered in the 		magnetic correction field in the Main tab.
 
-4. Enter additional data about the cave object (optional)
--- The right side of the Main window allows entry of object name, entrance 		coordinates and elevation, defining the output file name, and defining the fixed 	station.
--- During shot processing, the highest elevation point is determined as the fixed 	station, whereby the "Depth from fixed station" measure also becomes the cave 		depth.
-(Currently, changing the fixed station will not automatically change the depth)
+1. IMPORT SURVEY SHOTS
 
-5. Save settings
--- If a station prefix, magnetic declination and/or other object data have been 	entered, they need to be saved by clicking "Save settings".
+In the Main tab, click "Open survey file" and choose a file. The program reads the shots, extracts the main shots and uses Speleoliti Online to calculate polygon length, horizontal length, elevation difference and depth. The cave name, output file name and survey date are filled in automatically when the file contains them.
 
-6. EXPORT
--- Clicking "Export to CSV" opens a window to select the location for saving the 	csv file. The output file consists of rows with object data and a table of main 	survey shots.
--- Option "Add original azimuth column" - If magnetic declination is defined, it 	is possible to activate the option to export a column of original azimuths.
--- Option "Include splays" (TopoDroid) - Enables export of CSV file that includes 	splay shots in addition to main shots. By default it is disabled because 		Speleoliti processing does not support splay shots.
+For the TopoDroid raw-data export:
+• repeated measurements of the same main shot are averaged,
+• splay shots are kept,
+• deleted and overshoot measurements are left out.
 
-*******************************     CONTACT	 ***********************************
+If a shot is missing, check in TopoDroid whether it was deleted.
 
-For all bug reports, comments and suggestions for improvement, feel free to contact me at lkukuljan7 (at) gmail.com.		
 
-************************************************************************************
+2. STATION PREFIX (optional)
+
+In the "Shot prefix" field, enter a prefix to add to station names, e.g. the surveyor's initials ("jd-") or a cave abbreviation ("dc-").
+
+• TopoDroid and Qave: jd-0, jd-1, jd-2 …
+• PocketTopo: jd-1.0, jd-1.1, jd-1.2 …
+• Splay shots (TopoDroid) keep the asterisk in front: *jd-0, *jd-1 …
+
+A prefix is recommended: without one, Excel reads station names as numbers and drops leading zeros.
+
+
+3. MAGNETIC DECLINATION (optional)
+
+Enter the declination in decimal degrees directly in the "Magn. declination" field in the Main tab, or calculate it in the MagDec tab:
+
+1) Enter a location (place, town or address, e.g. "Zagreb, Ilica 1") and click "Lookup coordinates". The location is shown on the map and its coordinates are filled in below.
+
+2) You can also enter coordinates manually. In the "Coordinate system" menu, choose:
+   • WGS84 – latitude and longitude in decimal degrees, e.g. 45.8150 and 15.9819
+   • HTRS96/TM – Northing (N) and Easting (E) in metres, e.g. 5075146 and 459737
+
+3) Choose the model: WMM (2025–2029) or IGRF (1900–2029). If the survey date is outside the WMM range, IGRF is selected automatically.
+
+4) Check the survey date. It is filled in automatically when the file contains it; otherwise today's date is used.
+
+5) Click "Calculate". The declination is retrieved from NOAA Magnetic Field Calculators (https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml), shown to three decimal places, and entered in the Main tab automatically.
+
+Coordinate systems:
+• A decimal comma and spaces are accepted (e.g. 45,8150 or 5 075 146).
+• Switching the system converts coordinates already entered to the new system.
+• HTRS96/TM coordinates are converted to WGS84 inside the program before the calculation, with no internet needed. HTRS96 and WGS84 differ by less than a metre, which does not affect the declination.
+• If N and E are swapped, or degrees are entered instead of metres, the program shows an error.
+
+
+4. CAVE DATA (optional)
+
+On the right side of the Main tab you can enter the cave name, entrance coordinates (X, Y), elevation (Z), output file name and fixed station.
+
+The highest station is set as the fixed station automatically, so "Depth from fixed station" is also the depth of the cave. Changing the fixed station does not currently recalculate the depth.
+
+
+5. SAVE SETTINGS
+
+After entering a prefix, declination or cave data, click "Save settings" to apply them.
+
+
+6. EXPORT TO CSV
+
+Click "Export to CSV" and choose where to save the file. The file contains the cave data and the table of main shots.
+
+• "Add original azimuth column" – exports the original azimuths next to the corrected ones. Available once a declination has been applied with "Save settings".
+• "Include splays" (TopoDroid only) – also exports splay shots. Off by default because Speleoliti processing does not support splays.
+
+
+CONTACT
+
+Send bug reports, comments and suggestions to lkukuljan7 (at) gmail.com.
