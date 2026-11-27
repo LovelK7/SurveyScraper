@@ -39,3 +39,8 @@ def pockettopo_txt() -> Path:
 def load_golden(name: str) -> dict:
     with open(GOLDEN_DIR / name, encoding="utf-8") as f:
         return json.load(f)
+
+
+@pytest.fixture(scope="session")
+def topodroid_raw_csv() -> Path:
+    return FIXTURES_DIR / "jama_nad_cestou.csv"

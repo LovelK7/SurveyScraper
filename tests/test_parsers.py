@@ -79,3 +79,74 @@ def test_topodroid_propagates_io_error_as_parse_error(tmp_path):
     fake = tmp_path / "missing.csv"
     with pytest.raises(ParseError):
         TopoDroidParser().parse(fake)
+
+
+# --- TopoDroid raw-data export (one row per measurement) -------------------
+
+def _legs(result):
+    return [s for s in result.survey["viz"][1:] if not s["is_splay"]]
+
+
+def _splays(result):
+    return [s for s in result.survey["viz"][1:] if s["is_splay"]]
+
+
+def test_topodroid_raw_metadata(topodroid_raw_csv):
+    result = parse_file("TopoDroid", topodroid_raw_csv)
+    assert result.cave_name == "jama_nad_cestou"
+    assert result.survey_date.date().isoformat() == "2026-10-12"
+    assert result.has_splays is True
+    assert result.survey["viz"][0] == "null"
+
+
+def test_topodroid_raw_counts_drop_deleted_and_overshoot(topodroid_raw_csv):
+    result = parse_file("TopoDroid", topodroid_raw_csv)
+    # 32 leg rows, 2 deleted (blunder 23-24 re-shot, and last leg 30-31)
+    legs = _legs(result)
+    assert len(legs) == 30
+    assert ("30", "31") not in {(s["t1"], s["t2"]) for s in legs}
+    # 525 splay rows, 20 deleted + 2 overshoot (56.78 m, 117.52 m)
+    splays = _splays(result)
+    assert len(splays) == 503
+    assert max(s["l"] for s in splays) < 50
+
+
+def test_topodroid_raw_leg_is_average_of_repeats(topodroid_raw_csv):
+    result = parse_file("TopoDroid", topodroid_raw_csv)
+    leg = _legs(result)[0]
+    assert (leg["t1"], leg["t2"]) == ("0", "1")
+    assert leg["l"] == pytest.approx((13.670 + 13.593 + 13.583 + 13.564) / 4, abs=1e-3)
+    assert leg["a"] == pytest.approx((178.48 + 178.40 + 178.46 + 178.34) / 4, abs=0.01)
+    assert leg["f"] == pytest.approx((29.66 + 29.68 + 29.66 + 29.68) / 4, abs=0.01)
+
+
+def test_topodroid_raw_deleted_blunder_replaced_by_reshot(topodroid_raw_csv):
+    result = parse_file("TopoDroid", topodroid_raw_csv)
+    leg = next(s for s in _legs(result) if (s["t1"], s["t2"]) == ("23", "24"))
+    assert leg["l"] > 3  # the 0.224 m deleted shot is ignored
+
+
+def test_topodroid_raw_splay_shape(topodroid_raw_csv):
+    result = parse_file("TopoDroid", topodroid_raw_csv)
+    first = _splays(result)[0]
+    assert first["t1"] == "0" and first["t2"] == "*0"
+    assert (first["l"], first["a"], first["f"]) == (3.601, 177.14, 12.86)
+    assert list(first) == ["t1", "t2", "l", "a", "f", "left", "right", "up", "down", "note", "flags", "is_splay"]
+
+
+def test_topodroid_raw_azimuth_mean_wraps_north(tmp_path):
+    f = tmp_path / "wrap.csv"
+    f.write_text(
+        "# 2026.01.02 created by TopoDroid v 6.2.46\n# wrap\n"
+        "# id from to dist azi clino roll G M dip time type addres extend flag leg-type status Mx, My, Mz, Gx, Gy, Gz comment\n"
+        "1,0,1,2.000,359.80,10.00,0,0,0,0,0,0,x,1,0,0,0,0,0,0,0,0,0,\n"
+        "2,,,2.000,0.20,10.00,0,0,0,0,0,0,x,2,0,1,0,0,0,0,0,0,0,\n"
+        "3,,,9.999,90.00,10.00,0,0,0,0,0,0,x,2,0,1,1,0,0,0,0,0,0,\n"
+        "4,1,,1.000,90.00,-5.00,0,0,0,0,0,0,x,2,0,0,0,0,0,0,0,0,0,a, comment, with commas\n",
+        encoding="utf-8",
+    )
+    result = parse_file("TopoDroid", f)
+    leg, splay = result.survey["viz"][1:]
+    assert leg["l"] == 2.0
+    assert leg["a"] == pytest.approx(0.0, abs=0.01)  # not 180, and never 360.0
+    assert splay["t1"] == "1" and splay["is_splay"]

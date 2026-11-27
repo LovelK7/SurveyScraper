@@ -98,6 +98,42 @@
         "Geografska dužina",
         "Longitude"
     ],
+    "location_placeholder": [
+        "npr. Zagreb, Ilica 1",
+        "e.g. Zagreb, Ilica 1"
+    ],
+    "lat_placeholder": [
+        "npr. 45.8150",
+        "e.g. 45.8150"
+    ],
+    "lon_placeholder": [
+        "npr. 15.9819",
+        "e.g. 15.9819"
+    ],
+    "coord_system_label": [
+        "Koordinatni sustav",
+        "Coordinate system"
+    ],
+    "northing_label": [
+        "Sjever (N)",
+        "Northing (N)"
+    ],
+    "easting_label": [
+        "Istok (E)",
+        "Easting (E)"
+    ],
+    "northing_placeholder": [
+        "npr. 5075146",
+        "e.g. 5075146"
+    ],
+    "easting_placeholder": [
+        "npr. 459737",
+        "e.g. 459737"
+    ],
+    "htrs_range_error": [
+        "HTRS96/TM koordinate su izvan Hrvatske. Provjeri jesu li E i N zamijenjeni i jesu li upisane u metrima.",
+        "HTRS96/TM coordinates are outside Croatia. Check that E and N are not swapped and are entered in metres."
+    ],
     "map.set_position_x": [
         "44.2672",
         "54.5260"

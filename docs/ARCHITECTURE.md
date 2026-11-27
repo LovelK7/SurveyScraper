@@ -32,6 +32,8 @@ SurveyScraper/
     services/
       config_store.py             # Read/write config_settings.json
       magdec.py                   # geocode(), magnetic_declination()
+      coords.py                   # WGS84 <-> HTRS96/TM (EPSG:3765), offline
+      map_tiles.py                # app User-Agent for tkintermapview tile requests
       speleoliti.py               # SpeleolitiOnline (Selenium driver)
       exporter.py                 # write_survey_json(), export_to_csv()
   config_settings.json            # Bilingual catalog + last-used software + NOAA key

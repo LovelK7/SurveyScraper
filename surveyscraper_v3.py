@@ -21,6 +21,8 @@ from surveyscraper.logging_setup import configure_logging, get_logger
 from surveyscraper.services import config_store as _config_store
 from surveyscraper.services import exporter as _exporter
 from surveyscraper.services import magdec as _magdec
+from surveyscraper.services import map_tiles as _map_tiles
+from surveyscraper.services import coords as _coords
 from surveyscraper.services.speleoliti import SpeleolitiOnline as _SpeleolitiOnline
 from surveyscraper.__init__ import __version__ as _version
 
@@ -240,28 +242,39 @@ class SurveyScraper():
         self.location_frm_label.grid(row=0, column=0, columnspan=3, padx=10, pady=(5,0), sticky='ew')
         self.location_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["location_label"][self.lc]}: ', font=('Roboto', 12))
         self.location_label.grid(row=1, column=0, padx=10, pady=(5,0), sticky='e')
-        self.location_input = ctk.CTkEntry(self.location_frame, width=150, height=20, font=('Roboto', 12))
+        self.location_input = ctk.CTkEntry(self.location_frame, width=150, height=20, font=('Roboto', 12),
+                                           placeholder_text=self._placeholder('location_placeholder'))
         self.location_input.grid(row=1, column=1, padx=10, pady=(5,0))
         self.get_coord_btn = ctk.CTkButton(self.location_frame, width=150, text=f'{lcat["get_coord_btn_label"][self.lc]}',
                                         command=lambda: self.get_location(self.location_input.get()),
                                         compound='left', image=self.images['coordinates'])
         self.get_coord_btn.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
         Hovertip(self.location_input,f'{lcat["hovertip"][self.lc]}', hover_delay=500)
+        self.coord_system_label = ctk.CTkLabel(self.location_frame, text=f'{self._placeholder("coord_system_label")}: ', font=('Roboto', 12))
+        self.coord_system_label.grid(row=3, column=0, padx=(5,0), pady=(5,0), sticky='e')
+        self.coord_system = ctk.StringVar(value=_coords.WGS84)
+        self.coord_system_menu = ctk.CTkOptionMenu(self.location_frame, width=100, height=20, font=('Roboto', 12),
+                                                   values=list(_coords.SYSTEMS), variable=self.coord_system,
+                                                   command=self.change_coord_system)
+        self.coord_system_menu.grid(row=3, column=1, padx=0, pady=(5,0))
         self.lat_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lat_label"][self.lc]}: ', font=('Roboto', 12))
-        self.lat_label.grid(row=3, column=0, padx=(5,0), pady=(5,0), sticky='e')
-        self.lat_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12))
-        self.lat_input.grid(row=3, column=1, padx=0, pady=(5,0))
+        self.lat_label.grid(row=4, column=0, padx=(5,0), pady=(5,0), sticky='e')
+        self.lat_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12),
+                                      placeholder_text=self._placeholder('lat_placeholder'))
+        self.lat_input.grid(row=4, column=1, padx=0, pady=(5,0))
         self.lat_N = ctk.CTkLabel(self.location_frame, text="N", font=('Roboto', 12))
-        self.lat_N.grid(row=3, column=2, padx=(5,10), pady=(5,0), sticky='ew')
+        self.lat_N.grid(row=4, column=2, padx=(5,10), pady=(5,0), sticky='ew')
         self.lon_label = ctk.CTkLabel(self.location_frame, text=f'{lcat["lon_label"][self.lc]}: ', font=('Roboto', 12))
-        self.lon_label.grid(row=4, column=0, padx=(5,0), pady=(5,0), sticky='e')
-        self.lon_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12))
-        self.lon_input.grid(row=4, column=1, padx=0, pady=(5,0))
+        self.lon_label.grid(row=5, column=0, padx=(5,0), pady=(5,0), sticky='e')
+        self.lon_input = ctk.CTkEntry(self.location_frame, width=100, height=20, font=('Roboto', 12),
+                                      placeholder_text=self._placeholder('lon_placeholder'))
+        self.lon_input.grid(row=5, column=1, padx=0, pady=(5,0))
         self.lon_E = ctk.CTkLabel(self.location_frame, text="E", font=('Roboto', 12))
-        self.lon_E.grid(row=4, column=2, padx=(5,10), pady=(5,0), sticky='ew')
+        self.lon_E.grid(row=5, column=2, padx=(5,10), pady=(5,0), sticky='ew')
 
+        _map_tiles.install_user_agent(_version)
         self.map = tkintermapview.TkinterMapView(self.location_frame, width=150, height=300, corner_radius=15)
-        self.map.grid(row=5, column=0, columnspan=3, padx=5, pady=5, sticky='ew')
+        self.map.grid(row=6, column=0, columnspan=3, padx=5, pady=5, sticky='ew')
         self.map.set_position(float(lcat["map.set_position_x"][self.lc]), float(lcat["map.set_position_y"][self.lc]))
         self.map.set_zoom(int(lcat["map.set_zoom"][self.lc]))
 
@@ -359,6 +372,10 @@ class SurveyScraper():
         self.gui.mainloop()
         
     #   MAIN MENU BUTTONS
+    def _placeholder(self, key):
+        # .get so an older config_settings.json without these keys still starts
+        return lcat.get(key, ['', ''])[self.lc]
+
     def open_speleoliti(self):
         # open loading window in GUI and begin process
         self.loading_window = ctk.CTkToplevel(self.gui)
@@ -430,7 +447,9 @@ class SurveyScraper():
         self.location_label.configure(text=f'{lcat["location_label"][self.lc]}: ')
         self.get_coord_btn.configure(text=f'{lcat["get_coord_btn_label"][self.lc]}')
         self.lat_label.configure(text=f'{lcat["lat_label"][self.lc]}: ')
-        self.lon_label.configure(text=f'{lcat["lon_label"][self.lc]}: ')
+        self.location_input.configure(placeholder_text=self._placeholder('location_placeholder'))
+        self.coord_system_label.configure(text=f'{self._placeholder("coord_system_label")}: ')
+        self._apply_coord_system_labels()
         self.date_label.configure(text=f'{lcat["date_label"][self.lc]}: ')
         self.date_day.configure(text=f'{lcat["date_day"][self.lc]}:')
         self.date_month.configure(text=f'{lcat["date_month"][self.lc]}:')
@@ -704,6 +723,66 @@ class SurveyScraper():
 
 
     #   MAGNETIC DECLINATION FUNCTIONS
+    #   In HTRS96/TM mode the top field (lat_input) holds northing N and the
+    #   bottom one (lon_input) holds easting E, both in metres.
+    def _apply_coord_system_labels(self):
+        if self.coord_system.get() == _coords.HTRS96TM:
+            keys = ('northing_label', 'easting_label', 'northing_placeholder', 'easting_placeholder')
+            units = ('m', 'm')
+        else:
+            keys = ('lat_label', 'lon_label', 'lat_placeholder', 'lon_placeholder')
+            units = ('N', 'E')
+        self.lat_label.configure(text=f'{self._placeholder(keys[0])}: ')
+        self.lon_label.configure(text=f'{self._placeholder(keys[1])}: ')
+        self.lat_input.configure(placeholder_text=self._placeholder(keys[2]))
+        self.lon_input.configure(placeholder_text=self._placeholder(keys[3]))
+        self.lat_N.configure(text=units[0])
+        self.lon_E.configure(text=units[1])
+
+    def change_coord_system(self, new_system):
+        # Convert whatever is already typed so the user doesn't lose the point.
+        old_system = getattr(self, '_active_coord_system', _coords.WGS84)
+        self._active_coord_system = new_system
+        wgs84 = None
+        if new_system != old_system and self.lat_input.get() and self.lon_input.get():
+            try:
+                a = _coords.parse_number(self.lat_input.get())
+                b = _coords.parse_number(self.lon_input.get())
+                wgs84 = _coords.htrs96tm_to_wgs84(b, a) if old_system == _coords.HTRS96TM else (a, b)
+            except ValueError:
+                wgs84 = None  # unparseable input: leave the fields as they are
+        self._apply_coord_system_labels()
+        if wgs84 is not None:
+            self._set_coord_fields(*wgs84)
+
+    def _set_coord_fields(self, latitude, longitude):
+        """Show a WGS84 point in the fields, in the currently selected system."""
+        if self.coord_system.get() == _coords.HTRS96TM:
+            easting, northing = _coords.wgs84_to_htrs96tm(latitude, longitude)
+            top, bottom = f'{northing:.2f}', f'{easting:.2f}'
+        else:
+            top, bottom = f'{latitude:.4f}', f'{longitude:.4f}'
+        self.lat_input.delete(0, ctk.END)
+        self.lon_input.delete(0, ctk.END)
+        self.lat_input.insert(0, top)
+        self.lon_input.insert(0, bottom)
+
+    def _read_wgs84(self):
+        """Fields -> (lat, lon) in WGS84, or None after showing an error."""
+        try:
+            top = _coords.parse_number(self.lat_input.get())
+            bottom = _coords.parse_number(self.lon_input.get())
+        except ValueError:
+            messagebox.showerror('Error', f'{lcat["lat_lon_input_error_manual"][self.lc]}')
+            return None
+        if self.coord_system.get() != _coords.HTRS96TM:
+            return top, bottom
+        try:
+            return _coords.htrs96tm_to_wgs84(bottom, top)
+        except ValueError:
+            messagebox.showerror('Error', self._placeholder('htrs_range_error'))
+            return None
+
     def get_location(self, location):
         if not location:
             messagebox.showerror('Error', f'{lcat["location_error"][self.lc]}')
@@ -713,10 +792,7 @@ class SurveyScraper():
         except _NetworkError:
             messagebox.showerror('Error', 'Nije moguće dohvatiti koordinate! Provjeri internet vezu!')
             return
-        self.lat_input.delete(0, ctk.END)
-        self.lon_input.delete(0, ctk.END)
-        self.lat_input.insert(0, f'{latitude:.4f}')
-        self.lon_input.insert(0, f'{longitude:.4f}')
+        self._set_coord_fields(latitude, longitude)
         # Delete previous marker if it exists
         if hasattr(self, 'location_marker') and self.location_marker:
             self.location_marker.delete()
@@ -743,9 +819,12 @@ class SurveyScraper():
                 f'WMM: {_magdec.MODEL_YEAR_RANGES["WMM"][0]}–{_magdec.MODEL_YEAR_RANGES["WMM"][1]}'
             )
             return
+        wgs84 = self._read_wgs84()
+        if wgs84 is None:
+            return
         try:
             decl = _magdec.magnetic_declination(
-                float(self.lat_input.get()), float(self.lon_input.get()),
+                wgs84[0], wgs84[1],
                 model, year, month, day,
             )
         except _NetworkError:
