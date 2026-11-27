@@ -1,6 +1,6 @@
 ************************************************************************************
 
-		    SurveyScraper - Verzija 3.2 (siječanj 2026.)
+		    SurveyScraper - Verzija 4.1 (studeni 2026.)
 
 ************************************************************************************
 ************************     ŠTO JE SURVEYSCRAPER?      ****************************
@@ -12,7 +12,9 @@ SurveyScraper je program koji pojednostavljuje obradu podataka mjernih vlakova d
 -- Uvoz mjernih vlakova i automatsko filtriranje glavnih vlakova.
 -- Dodavanje predznaka/prefiksa točkama koje se pohranjuju u csv datoteci.
 -- Korekcija azimuta vlakova prema unesenoj ili izračunatoj magnetskoj deklinaciji.
+-- Uvoz TopoDroid izvoza sirovih podataka (svako mjerenje u zasebnom redu) s automatskim usrednjavanjem ponovljenih mjerenja glavnih vlakova.
 -- Računanje magnetske deklinacije za odabranu lokaciju, model i datum.
+-- Unos koordinata u sustavu WGS84 ili HTRS96/TM (službeni hrvatski projekcijski sustav).
 -- Pohrana podataka i tablice mjernih vlakova u csv datoteku.
 -- Uključivanje/isključivanje izvoza pomoćnih vlakova (splays) u izlaznoj csv datoteci (TopoDroid).
 -- Mogućnost dodatnih funkcionalnosti otvaranjem Speleoliti Online
@@ -32,6 +34,7 @@ te TRI TABA:
 
 1. UVOZ 
 -- U Main tab-u otvori datoteku s vlakovima: csv datoteku TopoDroid-a, srv	datoteku Qave-a ili txt datoteku PocketTopo-a.
+-- TopoDroid: podržan je uobičajeni csv izvoz i izvoz sirovih podataka (svako mjerenje u zasebnom redu). Program sam prepoznaje format. Kod sirovih podataka ponovljena mjerenja istog glavnog vlaka se usrednjavaju, a obrisana (deleted) mjerenja i mjerenja označena kao overshoot se izostavljaju - ako vlak nedostaje, provjeri nije li obrisan u TopoDroid-u.
 
 2. Definiraj prefiks/predznak točaka (opcionalno) 
 -- Npr. prema autoru nacrta (Marko Markić - "mm-") ili imenu objekta (Markićeva špilja - "mš-"). Tada će za slučajeve TopoDroid-a i Qave-a točke imati nazive:
@@ -43,14 +46,17 @@ te TRI TABA:
 	mm-1.1	mm-1.2
 	...
 -- NAPOMENA: Za TopoDroid pomoćni vlakovi (splays) označeni su zvjezdicom (*) koja će uvijek ostati na prvom mjestu. Npr. prefiks "az_" će proizvesti:
-	Glavna vlakovi: az_0, az_1, az_2...
+	Glavni vlakovi: az_0, az_1, az_2...
 	Pomoćni vlakovi: *az_0, *az_1, *az_2...
 
 3. Unesi magnetsku deklinaciju u decimalnim stupnjevima ili ju izračunaj automatski (opcionalno)
 -- 3.1 Za izračun magnetske deklinacije pritisni tab MagDec
 -- 3.2 Upiši lokaciju speleološkog objekta (npr. najbliže mjesto ili grad, mjesto, ulica)
 -- 3.3 Dohvati koordinate. Tražilica će locirati upisano mjesto te upisati koordinate u sljedeća dva polja (geografska širina i geografska dužina). 		Pronađena lokacija biti će prikazana na umanjenom zemljovidu.
--- 3.4 Koordinate je moguće upisati i samostalno (WGS84, decimalni zapis s točkom npr. 45.12345 i 14.12345)
+-- 3.4 Koordinate je moguće upisati i samostalno. U izborniku "Koordinatni sustav" odaberi:
+	WGS84 - geografska širina i dužina u decimalnim stupnjevima (npr. 45.8150 i 15.9819),
+	HTRS96/TM - Sjever (N) i Istok (E) u metrima (npr. N 5075146 i E 459737).
+   Decimalni zarez i razmaci su dopušteni. Promjenom sustava već upisane koordinate se automatski preračunavaju. HTRS96/TM koordinate se prije izračuna preračunavaju u WGS84 (bez interneta). Ako su N i E zamijenjeni ili upisani u stupnjevima, program će javiti grešku.
 -- 3.5 Odaberi željeni model za računanje magnetske deklinacije (default: WMM)
 -- 3.6 Odaberi datum odnosno dan, mjesec i godinu mjerenja (default: današnji datum)
 -- 3.7 Izračunaj. Ukoliko je sve pravilno upisano, dohvatiti će se magnetska 		deklinacija na tri decimalna mjesta sa portala Magnetic Field Calculators (NOAA, https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml). Nakon izračuna, magnetska deklinacija će biti automatski upisana u polje za magnetsku korekciju u Main tab-u.
@@ -66,7 +72,7 @@ te TRI TABA:
 6. IZVOZ
 -- Pritiskom na "Izvezi u CSV" otvara se prozor za odabir mjesta za pohranu 		csv datoteke. Izlazna datoteka se sastoji od redova s podacima o objektu te 		tablice glavnih mjernih vlakova.
 -- Opcija "Dodaj stupac izvornih azimuta" - Ukoliko je definirana magnetska 		deklinacija, moguće je aktivirati opciju izvoza stupca i originalnih azimuta.
--- Opcija "Uključi bočne vlakove" (TopoDroid) - Omogućuje izvoz CSV datoteke 		koja uključuje i bočna vlakva (splays) uz glavna. Standardno je 			isključeno jer Speleoliti obrada ne podržava bočna vlakva.
+-- Opcija "Uključi bočne vlakove" (TopoDroid) - Omogućuje izvoz CSV datoteke 		koja uključuje i bočne vlakove (splays) uz glavne. Standardno je 			isključeno jer Speleoliti obrada ne podržava bočne vlakove.
 
 *******************************     KONTAKT	 ***********************************
 

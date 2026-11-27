@@ -1,6 +1,6 @@
 ************************************************************************************
 
-		    SurveyScraper - Version 3.2 (January 2026)
+		    SurveyScraper - Version 4.1 (November 2026)
 
 ************************************************************************************
 ************************     WHAT IS SURVEYSCRAPER?      ***************************
@@ -12,7 +12,9 @@ SurveyScraper is a program that simplifies the processing of survey shot data ob
 -- Import survey shots and automatic filtering of main shots.
 -- Adding prefix/sign to station names saved in the csv file.
 -- Correction of shot azimuths according to entered or calculated magnetic declination.
+-- Import of the TopoDroid raw-data export (one row per measurement), with repeated measurements of main shots averaged automatically.
 -- Calculation of magnetic declination for selected location, model and date.
+-- Coordinate input in WGS84 or HTRS96/TM (the official Croatian projected system).
 -- Saving data and survey shot table to csv file.
 -- Include/exclude splay shots in output csv file (TopoDroid).
 -- Additional functionality by opening Speleoliti Online
@@ -32,6 +34,7 @@ and THREE TABS:
 
 1. IMPORT 
 -- In the Main tab, open the file with shots: TopoDroid csv file, Qave srv file 	or PocketTopo txt file.
+-- TopoDroid: both the usual csv export and the raw-data export (one row per measurement) are supported; the format is detected automatically. For raw data, repeated measurements of the same main shot are averaged, and deleted and overshoot measurements are left out - if a shot is missing, check whether it was deleted in TopoDroid.
 
 2. Define station prefix/sign (optional) 
 -- For example, according to the survey author (John Doe - "jd-") or cave name (Doe Cave - "dc-"). Then for TopoDroid and Qave cases, stations will be named:
@@ -50,7 +53,10 @@ and THREE TABS:
 -- 3.1 To calculate magnetic declination, click the MagDec tab
 -- 3.2 Enter the cave object location (e.g., nearest place or city, town, street)
 -- 3.3 Get coordinates. The search will locate the entered place and enter 		coordinates in the next two fields (latitude and longitude). The found location 	will be displayed on a small map.
--- 3.4 Coordinates can also be entered manually (WGS84, decimal notation with 		dot, e.g. 45.12345 and 14.12345)
+-- 3.4 Coordinates can also be entered manually. In the "Coordinate system" menu choose:
+	WGS84 - latitude and longitude in decimal degrees (e.g. 45.8150 and 15.9819),
+	HTRS96/TM - Northing (N) and Easting (E) in metres (e.g. N 5075146 and E 459737).
+   A decimal comma and spaces are accepted. Switching the system converts coordinates already entered. HTRS96/TM coordinates are converted to WGS84 before the calculation (offline). If N and E are swapped or entered in degrees, the program shows an error.
 -- 3.5 Select the desired model for magnetic declination calculation (default: WMM)
 -- 3.6 Select the date - day, month and year of survey (default: today's date)
 -- 3.7 Calculate. If everything is entered correctly, magnetic declination will be 	retrieved to three decimal places from the Magnetic Field Calculators portal 		(NOAA, https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml). After 		calculation, the magnetic declination will be automatically entered in the 		magnetic correction field in the Main tab.
